@@ -13,6 +13,7 @@ import (
 type calculation struct {
 	Num1     int    `json:"number1"`
 	Num2     int    `json:"number2"`
+	Result   int    `json:"result"`
 	Operator string `json:"operator"`
 	ID       int    `json:"id"`
 }
@@ -76,6 +77,7 @@ func createCalculation(c echo.Context) error {
 		return err
 	}
 
+	calc.Result = calc.Num1 + calc.Num2
 	db[calc.ID] = calc
 	seq++
 
@@ -83,9 +85,24 @@ func createCalculation(c echo.Context) error {
 }
 
 func updateCalculation(c echo.Context) error {
-	return c.String(http.StatusOK, "Hello, World!")
+	lock.Lock()
+	defer lock.Unlock()
+	calc := new(calculation)
+	if err := c.Bind(calc); err != nil {
+		return err
+	}
+	id, _ := strconv.Atoi(c.Param("id"))
+	db[id].Num1 = calc.Num1
+	db[id].Num1 = calc.Num1
+	db[id].Result = calc.Num1 + calc.Num2
+	return c.JSON(http.StatusOK, db[id])
 }
 
 func deleteCalculation(c echo.Context) error {
-	return c.String(http.StatusOK, " delete")
+	lock.Lock()
+	defer lock.Unlock()
+
+	id, _ := strconv.Atoi(c.Param("id"))
+	delete(db, id)
+	return c.NoContent(http.StatusNoContent)
 }
