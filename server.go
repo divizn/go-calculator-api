@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"net/http"
+	"strconv"
 	"sync"
 
 	"github.com/labstack/echo"
@@ -13,7 +14,11 @@ type calculation struct {
 	Num1     int    `json:"number1"`
 	Num2     int    `json:"number2"`
 	Operator string `json:"operator"`
-	Id       int    `json:"id"`
+	ID       int    `json:"id"`
+}
+
+type calcError struct {
+	message string
 }
 
 var (
@@ -43,18 +48,38 @@ func main() {
 }
 
 func getAllCalculations(c echo.Context) error {
+	lock.Lock()
+	defer lock.Unlock()
 	return c.JSON(http.StatusOK, db)
 }
 
 func getCalculation(c echo.Context) error {
-	return c.String(http.StatusOK, fmt.Sprintf("get id:%s", c.Param("id")))
+	lock.Lock()
+	defer lock.Unlock()
+	id, _ := strconv.Atoi(c.Param("id"))
+
+	_, ok := db[id]
+	if !ok {
+		return c.JSON(http.StatusNotFound, calcError{message: fmt.Sprintf("Could not find calculation for ID %v", id)})
+	}
+	return c.JSON(http.StatusOK, db[id])
 }
 
 func createCalculation(c echo.Context) error {
 	lock.Lock()
 	defer lock.Unlock()
 
-	return c.String(http.StatusOK, "create")
+	calc := &calculation{
+		ID: seq,
+	}
+	if err := c.Bind(calc); err != nil {
+		return err
+	}
+
+	db[calc.ID] = calc
+	seq++
+
+	return c.JSON(http.StatusCreated, calc)
 }
 
 func updateCalculation(c echo.Context) error {
