@@ -2,12 +2,12 @@ package main
 
 import (
 	"fmt"
-	"math"
 	"net/http"
 	"strconv"
 	"sync"
 
 	"github.com/divizn/echo-calculator/internal/models"
+	"github.com/divizn/echo-calculator/internal/services"
 	"github.com/go-playground/validator/v10"
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/middleware"
@@ -64,40 +64,21 @@ func getCalculation(c echo.Context) error {
 func createCalculation(c echo.Context) error {
 	lock.Lock()
 	defer lock.Unlock()
-
 	calc := &models.Calculation{
 		ID: seq,
 	}
 	if err := c.Bind(calc); err != nil {
 		return err
 	}
-	// validate := models.RegisterValidations()
 	if err := validate.Struct(calc); err != nil {
 		return c.JSON(http.StatusBadRequest, map[string]string{
 			"error": err.Error(),
 		})
 	}
 
-	switch calc.Operator {
-	case "+":
-		calc.Result = calc.Num1 + calc.Num2
-	case "-":
-		calc.Result = calc.Num1 - calc.Num2
-	case "*":
-		calc.Result = calc.Num1 * calc.Num2
-	case "/":
-		// 0 check is not necessary because 0 is float32s 0 value and "required" in validator library sees is as nothing there https://github.com/go-playground/validator/issues/290
-		if calc.Num2 == 0 {
-			return c.JSON(http.StatusBadRequest, models.CalcError{Message: "Division by zero is not allowed"})
-		}
-		calc.Result = calc.Num1 / calc.Num2
-	case "^":
-		calc.Result = float32(math.Pow(float64(calc.Num1), float64(calc.Num2)))
-	case "%":
-		if calc.Num2 == 0 {
-			return c.JSON(http.StatusBadRequest, models.CalcError{Message: "Modulo by zero is not allowed"})
-		}
-		calc.Result = float32(int(calc.Num1) % int(calc.Num2))
+	err := services.CalculateResult(calc)
+	if err != nil { // should be unreachable
+		return c.JSON(http.StatusBadRequest, err)
 	}
 
 	db[calc.ID] = calc
@@ -113,10 +94,16 @@ func updateCalculation(c echo.Context) error {
 	if err := c.Bind(calc); err != nil {
 		return err
 	}
+	if err := validate.Struct(calc); err != nil {
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"error": err.Error(),
+		})
+	}
 	id, _ := strconv.Atoi(c.Param("id"))
-	db[id].Num1 = calc.Num1
-	db[id].Num1 = calc.Num1
-	db[id].Result = calc.Num1 + calc.Num2
+	err := services.UpdateCalculation(calc, db, id)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, map[string]string{"error": err.Error()})
+	}
 	return c.JSON(http.StatusOK, db[id])
 }
 
