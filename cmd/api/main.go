@@ -2,31 +2,24 @@ package main
 
 import (
 	"fmt"
+	"math"
 	"net/http"
 	"strconv"
 	"sync"
 
+	"github.com/divizn/echo-calculator/internal/models"
+	"github.com/go-playground/validator/v10"
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/middleware"
 )
 
-type calculation struct {
-	Num1     int    `json:"number1"`
-	Num2     int    `json:"number2"`
-	Result   int    `json:"result"`
-	Operator string `json:"operator"`
-	ID       int    `json:"id"`
-}
-
-type calcError struct {
-	message string
-}
-
 var (
 	seq  = 1
 	lock = sync.Mutex{}
-	db   = map[int]*calculation{}
+	db   = map[int]*models.Calculation{}
 )
+
+var validate *validator.Validate
 
 /*
 * CRUD API that takes 2 numbers and an operand, and stores it with the result in a database.
@@ -38,6 +31,8 @@ func main() {
 
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
+
+	validate = models.RegisterValidations()
 
 	e.GET("/calculations", getAllCalculations)
 	e.POST("/calculations", createCalculation)
@@ -61,7 +56,7 @@ func getCalculation(c echo.Context) error {
 
 	_, ok := db[id]
 	if !ok {
-		return c.JSON(http.StatusNotFound, calcError{message: fmt.Sprintf("Could not find calculation for ID %v", id)})
+		return c.JSON(http.StatusNotFound, models.CalcError{Message: fmt.Sprintf("Could not find calculation for ID %v", id)})
 	}
 	return c.JSON(http.StatusOK, db[id])
 }
@@ -70,14 +65,41 @@ func createCalculation(c echo.Context) error {
 	lock.Lock()
 	defer lock.Unlock()
 
-	calc := &calculation{
+	calc := &models.Calculation{
 		ID: seq,
 	}
 	if err := c.Bind(calc); err != nil {
 		return err
 	}
+	// validate := models.RegisterValidations()
+	if err := validate.Struct(calc); err != nil {
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"error": err.Error(),
+		})
+	}
 
-	calc.Result = calc.Num1 + calc.Num2
+	switch calc.Operator {
+	case "+":
+		calc.Result = calc.Num1 + calc.Num2
+	case "-":
+		calc.Result = calc.Num1 - calc.Num2
+	case "*":
+		calc.Result = calc.Num1 * calc.Num2
+	case "/":
+		// 0 check is not necessary because 0 is float32s 0 value and "required" in validator library sees is as nothing there https://github.com/go-playground/validator/issues/290
+		if calc.Num2 == 0 {
+			return c.JSON(http.StatusBadRequest, models.CalcError{Message: "Division by zero is not allowed"})
+		}
+		calc.Result = calc.Num1 / calc.Num2
+	case "^":
+		calc.Result = float32(math.Pow(float64(calc.Num1), float64(calc.Num2)))
+	case "%":
+		if calc.Num2 == 0 {
+			return c.JSON(http.StatusBadRequest, models.CalcError{Message: "Modulo by zero is not allowed"})
+		}
+		calc.Result = float32(int(calc.Num1) % int(calc.Num2))
+	}
+
 	db[calc.ID] = calc
 	seq++
 
@@ -87,7 +109,7 @@ func createCalculation(c echo.Context) error {
 func updateCalculation(c echo.Context) error {
 	lock.Lock()
 	defer lock.Unlock()
-	calc := new(calculation)
+	calc := new(models.Calculation)
 	if err := c.Bind(calc); err != nil {
 		return err
 	}
