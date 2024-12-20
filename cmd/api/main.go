@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"log"
 
 	"github.com/divizn/echo-calculator/internal/handler"
@@ -25,13 +24,10 @@ func main() {
 	godotenv.Load()
 
 	var env utils.IConfig
-
 	err := env.New()
 	if err != nil {
 		log.Fatal("Could not load environment variables (check if they are present)")
 	}
-
-	fmt.Println("db: ", env.PORT)
 
 	e := echo.New()
 
@@ -39,6 +35,8 @@ func main() {
 	e.Use(middleware.Recover())
 
 	h := handler.New(db)
+
+	defer h.Db.Close() // close pool on server shut down
 
 	e.GET("/calculations", h.GetAllCalculations)
 	e.POST("/calculations", h.CreateCalculation)

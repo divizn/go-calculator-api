@@ -1,8 +1,6 @@
 package utils
 
 import (
-	"fmt"
-
 	"github.com/caarlos0/env/v11"
 	"github.com/go-playground/validator/v10"
 )
@@ -27,7 +25,6 @@ func (c *IConfig) New() error {
 	if err != nil {
 		return err
 	}
-	fmt.Println(c)
 
 	err = validate.Struct(c)
 	if err != nil {
