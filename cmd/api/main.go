@@ -1,8 +1,12 @@
 package main
 
 import (
+	"fmt"
+	"log"
+
 	"github.com/divizn/echo-calculator/internal/handler"
 	"github.com/divizn/echo-calculator/internal/models"
+	"github.com/divizn/echo-calculator/internal/utils"
 	"github.com/joho/godotenv"
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/middleware"
@@ -19,6 +23,15 @@ var (
  */
 func main() {
 	godotenv.Load()
+
+	var env utils.IConfig
+
+	err := env.New()
+	if err != nil {
+		log.Fatal("Could not load environment variables (check if they are present)")
+	}
+
+	fmt.Println("db: ", env.PORT)
 
 	e := echo.New()
 

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/divizn/echo-calculator/internal/utils"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -14,7 +15,9 @@ import (
 
 // initialise the db and return a pointer to the connection pool to be utilised in handler.Handler
 func InitDB() (*pgxpool.Pool, error) {
-	dbpool, err := pgxpool.New(context.Background(), os.Getenv("DATABASE_URL"))
+	var env utils.IConfig
+	env.New()
+	dbpool, err := pgxpool.New(context.Background(), env.DB_URL)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Unable to create connection pool: %v\n", err)
 		os.Exit(1)
