@@ -8,7 +8,9 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-// TODO
+// TODO:
+// database
+// functions for creating, updating by id, retrieving by id, and getting all entries (maybe in chunks research pagination)
 
 func InitDB() {
 	dbpool, err := pgxpool.New(context.Background(), os.Getenv("DATABASE_URL"))

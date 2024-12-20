@@ -11,3 +11,5 @@ func ValidateID(id string) (int, error) {
 func IDInDB(id int, db *map[int]*models.Calculation) bool {
 	return false
 }
+
+// func EnvVars -> loads env variables and types them

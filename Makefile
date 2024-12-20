@@ -8,3 +8,10 @@ run:
 	@echo "Starting dev server..."
 
 	@go run cmd/api/main.gom
+
+db:
+	@docker compose up
+
+
+dbc:
+	@docker compose down
