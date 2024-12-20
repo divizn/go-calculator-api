@@ -11,17 +11,17 @@ import (
 )
 
 func (h *Handler) GetAllCalculations(c echo.Context) error {
-	return c.JSON(http.StatusOK, h.Db)
+	return c.JSON(http.StatusOK, h.Db_OLD)
 }
 
 func (h *Handler) GetCalculation(c echo.Context) error {
 	id, _ := strconv.Atoi(c.Param("id"))
 
-	_, ok := h.Db[id]
+	_, ok := h.Db_OLD[id]
 	if !ok {
 		return c.JSON(http.StatusNotFound, models.CalcError{Message: fmt.Sprintf("Could not find calculation for ID %v", id)})
 	}
-	return c.JSON(http.StatusOK, h.Db[id])
+	return c.JSON(http.StatusOK, h.Db_OLD[id])
 }
 
 func (h *Handler) CreateCalculation(c echo.Context) error {
@@ -42,7 +42,7 @@ func (h *Handler) CreateCalculation(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, err)
 	}
 
-	h.Db[calc.ID] = calc
+	h.Db_OLD[calc.ID] = calc
 	h.seq++
 
 	return c.JSON(http.StatusCreated, calc)
@@ -59,15 +59,15 @@ func (h *Handler) UpdateCalculation(c echo.Context) error {
 		})
 	}
 	id, _ := strconv.Atoi(c.Param("id"))
-	err := services.UpdateCalculation(calc, h.Db, id)
+	err := services.UpdateCalculation(calc, h.Db_OLD, id)
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, map[string]string{"error": err.Error()})
 	}
-	return c.JSON(http.StatusOK, h.Db[id])
+	return c.JSON(http.StatusOK, h.Db_OLD[id])
 }
 
 func (h *Handler) DeleteCalculation(c echo.Context) error {
 	id, _ := strconv.Atoi(c.Param("id"))
-	delete(h.Db, id)
+	delete(h.Db_OLD, id)
 	return c.NoContent(http.StatusNoContent)
 }

@@ -12,7 +12,8 @@ import (
 // database
 // functions for creating, updating by id, retrieving by id, and getting all entries (maybe in chunks research pagination)
 
-func InitDB() {
+// initialise the db and return a pointer to the connection pool to be utilised in handler.Handler
+func InitDB() (*pgxpool.Pool, error) {
 	dbpool, err := pgxpool.New(context.Background(), os.Getenv("DATABASE_URL"))
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Unable to create connection pool: %v\n", err)
@@ -24,8 +25,10 @@ func InitDB() {
 	err = dbpool.QueryRow(context.Background(), "select 'Hello, world!'").Scan(&greeting)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "QueryRow failed: %v\n", err)
-		os.Exit(1)
+		return nil, err
 	}
 
 	fmt.Println(greeting)
+
+	return dbpool, nil
 }
