@@ -7,15 +7,15 @@ import (
 )
 
 type Calculation struct {
-	Num1     float32 `json:"number1" validate:"required"`
-	Num2     float32 `json:"number2" validate:"required"`
-	Operator string  `json:"operator" validate:"required,operator"`
-	Result   float32 `json:"result"`
-	ID       int     `json:"id"`
+	Num1     float32 `json:"number1" validate:"required" example:"1"`
+	Num2     float32 `json:"number2" validate:"required" example:"1"`
+	Operator string  `json:"operator" validate:"required,operator" example:"+"`
+	Result   float32 `json:"result" example:"2"`
+	ID       int     `json:"id" example:"1"`
 }
 
 type CalcError struct {
-	Message string `json:"message"`
+	Message string `json:"message" example:"cannot divide by zero"`
 }
 
 var validate *validator.Validate
