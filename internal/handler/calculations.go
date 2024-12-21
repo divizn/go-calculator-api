@@ -17,7 +17,7 @@ import (
 //	@ID				get-all-calculations
 //	@Accept			json
 //	@Produce		json
-//	@Success		200		{string}	string			"ok"
+//	@Success		200	{string}	string	"ok"
 //	@Router			/calculations [get]
 func (h *Handler) GetAllCalculations(c echo.Context) error {
 	return c.JSON(http.StatusOK, h.Db_OLD)
@@ -30,8 +30,8 @@ func (h *Handler) GetAllCalculations(c echo.Context) error {
 //	@ID				get-calculation
 //	@Accept			json
 //	@Produce		json
-//	@Success		200		{string}	string			"ok"
-//	@Failure 		404		(string) 	string 			"not found"
+//	@Success		200	{string}	string	"ok"
+//	@Failure		404	(string)	string	"not found"
 //
 //	@Router			/calculation/(some-id) [get]
 func (h *Handler) GetCalculation(c echo.Context) error {
@@ -51,8 +51,8 @@ func (h *Handler) GetCalculation(c echo.Context) error {
 //	@ID				create-calculation
 //	@Accept			json
 //	@Produce		json
-//	@Success		201	{string}	string			"created"
-//	@Failure 		400		(string) 	string 			"bad request"
+//	@Success		201	{string}	string	"created"
+//	@Failure		400	(string)	string	"bad request"
 //
 //	@Router			/calculation [post]
 func (h *Handler) CreateCalculation(c echo.Context) error {
@@ -81,16 +81,16 @@ func (h *Handler) CreateCalculation(c echo.Context) error {
 
 // UpdateCalculation example
 //
-// @Summary		Updates a calculation from a given ID
-// @Description	Update calculation from given ID
-// @ID				update-calculation
-// @Param			some_id	path		int				true	"Some ID"
-// @Accept			json
-// @Produce		json
-// @Success		200		{string}	string			"ok"
-// @Failure 		400		(string) 	string 			"bad request"
+//	@Summary		Updates a calculation from a given ID
+//	@Description	Update calculation from given ID
+//	@ID				update-calculation
+//	@Param			some_id	path	int	true	"Some ID"
+//	@Accept			json
+//	@Produce		json
+//	@Success		200	{string}	string	"ok"
+//	@Failure		400	(string)	string	"bad request"
 //
-// @Router			/calculation/(some-id) [put]
+//	@Router			/calculation/(some-id) [put]
 func (h *Handler) UpdateCalculation(c echo.Context) error {
 	calc := new(models.Calculation)
 	if err := c.Bind(calc); err != nil {
@@ -114,10 +114,10 @@ func (h *Handler) UpdateCalculation(c echo.Context) error {
 //	@Summary		Deletes a calculation from a given ID
 //	@Description	Update calculation from given ID
 //	@ID				delete-calculation
-//	@Param			some_id	path		int				true	"Some ID"
+//	@Param			some_id	path	int	true	"Some ID"
 //	@Accept			json
 //	@Produce		json
-//	@Success		204		{string}	string			"no content"
+//	@Success		204	{string}	string	"no content"
 //
 //	@Router			/calculation/(some-id) [delete]
 func (h *Handler) DeleteCalculation(c echo.Context) error {
