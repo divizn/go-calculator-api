@@ -7,7 +7,7 @@ import (
 
 	"github.com/divizn/echo-calculator/internal/models"
 	"github.com/divizn/echo-calculator/internal/services"
-	"github.com/labstack/echo"
+	"github.com/labstack/echo/v4"
 )
 
 func (h *Handler) GetAllCalculations(c echo.Context) error {
