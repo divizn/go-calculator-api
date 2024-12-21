@@ -10,10 +10,30 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
+// GetAllCalculations example
+//
+//	@Summary		Shows all calculations in the database
+//	@Description	Get all calculations
+//	@ID				get-all-calculations
+//	@Accept			json
+//	@Produce		json
+//	@Success		200		{string}	string			"ok"
+//	@Router			/calculations [get]
 func (h *Handler) GetAllCalculations(c echo.Context) error {
 	return c.JSON(http.StatusOK, h.Db_OLD)
 }
 
+// GetCalculation example
+//
+//	@Summary		Gets a calculation from the given ID
+//	@Description	Get calculation by ID
+//	@ID				get-calculation
+//	@Accept			json
+//	@Produce		json
+//	@Success		200		{string}	string			"ok"
+//	@Failure 		404		(string) 	string 			"not found"
+//
+//	@Router			/calculation/(some-id) [get]
 func (h *Handler) GetCalculation(c echo.Context) error {
 	id, _ := strconv.Atoi(c.Param("id"))
 
@@ -24,6 +44,17 @@ func (h *Handler) GetCalculation(c echo.Context) error {
 	return c.JSON(http.StatusOK, h.Db_OLD[id])
 }
 
+// CreateCalculation example
+//
+//	@Summary		Creates a calculation
+//	@Description	Createc calculation
+//	@ID				create-calculation
+//	@Accept			json
+//	@Produce		json
+//	@Success		201	{string}	string			"created"
+//	@Failure 		400		(string) 	string 			"bad request"
+//
+//	@Router			/calculation [post]
 func (h *Handler) CreateCalculation(c echo.Context) error {
 	calc := &models.Calculation{
 		ID: h.seq,
@@ -48,6 +79,18 @@ func (h *Handler) CreateCalculation(c echo.Context) error {
 	return c.JSON(http.StatusCreated, calc)
 }
 
+// UpdateCalculation example
+//
+// @Summary		Updates a calculation from a given ID
+// @Description	Update calculation from given ID
+// @ID				update-calculation
+// @Param			some_id	path		int				true	"Some ID"
+// @Accept			json
+// @Produce		json
+// @Success		200		{string}	string			"ok"
+// @Failure 		400		(string) 	string 			"bad request"
+//
+// @Router			/calculation/(some-id) [put]
 func (h *Handler) UpdateCalculation(c echo.Context) error {
 	calc := new(models.Calculation)
 	if err := c.Bind(calc); err != nil {
@@ -66,6 +109,17 @@ func (h *Handler) UpdateCalculation(c echo.Context) error {
 	return c.JSON(http.StatusOK, h.Db_OLD[id])
 }
 
+// DeleteCalculation example
+//
+//	@Summary		Deletes a calculation from a given ID
+//	@Description	Update calculation from given ID
+//	@ID				delete-calculation
+//	@Param			some_id	path		int				true	"Some ID"
+//	@Accept			json
+//	@Produce		json
+//	@Success		204		{string}	string			"no content"
+//
+//	@Router			/calculation/(some-id) [delete]
 func (h *Handler) DeleteCalculation(c echo.Context) error {
 	id, _ := strconv.Atoi(c.Param("id"))
 	delete(h.Db_OLD, id)
