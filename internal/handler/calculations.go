@@ -33,7 +33,7 @@ func (h *Handler) GetAllCalculations(c echo.Context) error {
 //	@Success		200	{string}	string	"ok"
 //	@Failure		404	(string)	string	"not found"
 //
-//	@Router			/calculation/(some-id) [get]
+//	@Router			/calculation/{id} [get]
 func (h *Handler) GetCalculation(c echo.Context) error {
 	id, _ := strconv.Atoi(c.Param("id"))
 
@@ -90,7 +90,7 @@ func (h *Handler) CreateCalculation(c echo.Context) error {
 //	@Success		200	{string}	string	"ok"
 //	@Failure		400	(string)	string	"bad request"
 //
-//	@Router			/calculation/(some-id) [put]
+//	@Router			/calculation/{id} [put]
 func (h *Handler) UpdateCalculation(c echo.Context) error {
 	calc := new(models.Calculation)
 	if err := c.Bind(calc); err != nil {
@@ -119,7 +119,7 @@ func (h *Handler) UpdateCalculation(c echo.Context) error {
 //	@Produce		json
 //	@Success		204	{string}	string	"no content"
 //
-//	@Router			/calculation/(some-id) [delete]
+//	@Router			/calculation/{id} [delete]
 func (h *Handler) DeleteCalculation(c echo.Context) error {
 	id, _ := strconv.Atoi(c.Param("id"))
 	delete(h.Db_OLD, id)

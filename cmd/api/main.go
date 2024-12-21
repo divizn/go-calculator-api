@@ -7,7 +7,7 @@ import (
 	"github.com/divizn/echo-calculator/internal/models"
 	"github.com/divizn/echo-calculator/internal/utils"
 
-	_ "github.com/divizn/echo-calculator/cmd/api/docs"
+	_ "github.com/divizn/echo-calculator/docs"
 
 	"github.com/joho/godotenv"
 	_ "github.com/joho/godotenv/autoload"
