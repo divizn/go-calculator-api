@@ -1,4 +1,10 @@
 info:
-  contact: {}
+  contact:
+    name: Repository
+    url: http://github.com/divizn/go-calculator-api
+  description: CRUD API that takes 2 numbers and an operand, and stores it with the
+    result in a database.
+  title: Calculator API
+  version: "1.0"
 paths: {}
 swagger: "2.0"
