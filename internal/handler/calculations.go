@@ -28,10 +28,11 @@ func (h *Handler) GetAllCalculations(c echo.Context) error {
 //	@Summary		Gets a calculation from the given ID
 //	@Description	Get calculation by ID
 //	@ID				get-calculation
+//	@Param			some_id	path	int	true	"Some ID"
 //	@Accept			json
 //	@Produce		json
 //	@Success		200	{string}	string	"ok"
-//	@Failure		404	(string)	string	"not found"
+//	@Failure		404	{string}	string	"not found"
 //
 //	@Router			/calculation/{id} [get]
 func (h *Handler) GetCalculation(c echo.Context) error {
@@ -52,7 +53,7 @@ func (h *Handler) GetCalculation(c echo.Context) error {
 //	@Accept			json
 //	@Produce		json
 //	@Success		201	{string}	string	"created"
-//	@Failure		400	(string)	string	"bad request"
+//	@Failure		400	{string}	string	"bad request"
 //
 //	@Router			/calculation [post]
 func (h *Handler) CreateCalculation(c echo.Context) error {
@@ -88,7 +89,7 @@ func (h *Handler) CreateCalculation(c echo.Context) error {
 //	@Accept			json
 //	@Produce		json
 //	@Success		200	{string}	string	"ok"
-//	@Failure		400	(string)	string	"bad request"
+//	@Failure		400	{string}	string	"bad request"
 //
 //	@Router			/calculation/{id} [put]
 func (h *Handler) UpdateCalculation(c echo.Context) error {
