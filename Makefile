@@ -19,5 +19,5 @@ dbc:
 	@docker compose down
 
 docs:
-	@swag init --dir ./cmd/api --output ./docs
+	@swag init --dir ./cmd/api,internal/handler,internal/models --output ./docs
 
