@@ -20,15 +20,11 @@ var (
 	db = map[int]*models.Calculation{}
 )
 
-//	@title			Calculator API
-//	@version		1.0
-//	@description	CRUD API that takes 2 numbers and an operand, and stores it with the result in a database.
-//
-// Example:
-// 4 + 4 would be stored as 4 + 4 = 8.
-//
-//	@contact.name	Repository
-//	@contact.url	http://github.com/divizn/go-calculator-api
+// @title			Calculator API
+// @version		1.0
+// @description	CRUD API that takes 2 numbers and an operand, and stores it with the result in a database.
+// @contact.name	Repository
+// @contact.url	http://github.com/divizn/go-calculator-api
 func main() {
 	godotenv.Load()
 
