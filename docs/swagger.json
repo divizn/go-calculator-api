@@ -27,7 +27,7 @@
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/models.CalculationResponse"
+                                "$ref": "#/definitions/models.Calculation"
                             }
                         }
                     }
@@ -58,7 +58,7 @@
                     "201": {
                         "description": "created",
                         "schema": {
-                            "$ref": "#/definitions/models.CalculationResponse"
+                            "$ref": "#/definitions/models.Calculation"
                         }
                     },
                     "400": {
@@ -94,7 +94,7 @@
                     "200": {
                         "description": "ok",
                         "schema": {
-                            "$ref": "#/definitions/models.CalculationResponse"
+                            "$ref": "#/definitions/models.Calculation"
                         }
                     },
                     "404": {
@@ -137,7 +137,7 @@
                     "200": {
                         "description": "ok",
                         "schema": {
-                            "$ref": "#/definitions/models.CalculationResponse"
+                            "$ref": "#/definitions/models.Calculation"
                         }
                     },
                     "400": {
@@ -185,8 +185,13 @@
                 }
             }
         },
-        "models.CalculationResponse": {
+        "models.Calculation": {
             "type": "object",
+            "required": [
+                "number1",
+                "number2",
+                "operator"
+            ],
             "properties": {
                 "id": {
                     "type": "integer",

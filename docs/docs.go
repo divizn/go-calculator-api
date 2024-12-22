@@ -35,7 +35,7 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/models.CalculationResponse"
+                                "$ref": "#/definitions/models.Calculation"
                             }
                         }
                     }
@@ -66,7 +66,7 @@ const docTemplate = `{
                     "201": {
                         "description": "created",
                         "schema": {
-                            "$ref": "#/definitions/models.CalculationResponse"
+                            "$ref": "#/definitions/models.Calculation"
                         }
                     },
                     "400": {
@@ -102,7 +102,7 @@ const docTemplate = `{
                     "200": {
                         "description": "ok",
                         "schema": {
-                            "$ref": "#/definitions/models.CalculationResponse"
+                            "$ref": "#/definitions/models.Calculation"
                         }
                     },
                     "404": {
@@ -145,7 +145,7 @@ const docTemplate = `{
                     "200": {
                         "description": "ok",
                         "schema": {
-                            "$ref": "#/definitions/models.CalculationResponse"
+                            "$ref": "#/definitions/models.Calculation"
                         }
                     },
                     "400": {
@@ -193,8 +193,13 @@ const docTemplate = `{
                 }
             }
         },
-        "models.CalculationResponse": {
+        "models.Calculation": {
             "type": "object",
+            "required": [
+                "number1",
+                "number2",
+                "operator"
+            ],
             "properties": {
                 "id": {
                     "type": "integer",

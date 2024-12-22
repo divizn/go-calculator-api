@@ -5,7 +5,7 @@ definitions:
         example: error message goes here
         type: string
     type: object
-  models.CalculationResponse:
+  models.Calculation:
     properties:
       id:
         example: 1
@@ -22,6 +22,10 @@ definitions:
       result:
         example: 2
         type: number
+    required:
+    - number1
+    - number2
+    - operator
     type: object
   models.CreateCalculationRequest:
     properties:
@@ -73,7 +77,7 @@ paths:
           description: ok
           schema:
             items:
-              $ref: '#/definitions/models.CalculationResponse'
+              $ref: '#/definitions/models.Calculation'
             type: array
       summary: Shows all calculations in the database
     post:
@@ -94,7 +98,7 @@ paths:
         "201":
           description: created
           schema:
-            $ref: '#/definitions/models.CalculationResponse'
+            $ref: '#/definitions/models.Calculation'
         "400":
           description: bad request
           schema:
@@ -135,7 +139,7 @@ paths:
         "200":
           description: ok
           schema:
-            $ref: '#/definitions/models.CalculationResponse'
+            $ref: '#/definitions/models.Calculation'
         "404":
           description: not found
           schema:
@@ -164,7 +168,7 @@ paths:
         "200":
           description: ok
           schema:
-            $ref: '#/definitions/models.CalculationResponse'
+            $ref: '#/definitions/models.Calculation'
         "400":
           description: bad request
           schema:

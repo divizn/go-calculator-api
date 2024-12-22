@@ -17,7 +17,7 @@ import (
 //	@ID				get-all-calculations
 //	@Accept			json
 //	@Produce		json
-//	@Success		200	{array}	models.CalculationResponse	"ok"
+//	@Success		200	{array}	models.Calculation	"ok"
 //	@Router			/calculations [get]
 func (h *Handler) GetAllCalculations(c echo.Context) error {
 	return c.JSON(http.StatusOK, h.Db_OLD)
@@ -31,7 +31,7 @@ func (h *Handler) GetAllCalculations(c echo.Context) error {
 //	@Param			id	path	int	true	"Some ID"
 //	@Accept			json
 //	@Produce		json
-//	@Success		200	{object}	models.CalculationResponse	"ok"
+//	@Success		200	{object}	models.Calculation	"ok"
 //	@Failure		404	{object}	models.CalcError			"not found"
 //
 //	@Router			/calculations/{id} [get]
@@ -53,7 +53,7 @@ func (h *Handler) GetCalculation(c echo.Context) error {
 //	@Param			request	body	models.CreateCalculationRequest	true	"request body"
 //	@Accept			json
 //	@Produce		json
-//	@Success		201	{object}	models.CalculationResponse	"created"
+//	@Success		201	{object}	models.Calculation	"created"
 //	@Failure		400	{object}	models.CalcError			"bad request"
 //
 //	@Router			/calculations [post]
@@ -90,7 +90,7 @@ func (h *Handler) CreateCalculation(c echo.Context) error {
 //	@Param			request	body	models.UpdateCalculationRequest	true	"request body"
 //	@Accept			json
 //	@Produce		json
-//	@Success		200	{object}	models.CalculationResponse	"ok"
+//	@Success		200	{object}	models.Calculation	"ok"
 //	@Failure		400	{object}	models.CalcError			"bad request"
 //
 //	@Router			/calculations/{id} [put]
