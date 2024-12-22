@@ -24,7 +24,7 @@ type CreateCalculationRequest struct {
 type UpdateCalculationRequest struct {
 	Num1     *float32 `json:"number1,omitempty" example:"1"`
 	Num2     *float32 `json:"number2,omitempty" example:"1"`
-	Operator *string  `json:"operator,omitempty" example:"+"`
+	Operator *string  `json:"operator,omitempty" validate:"operator" example:"+"`
 }
 
 type CalcError struct {

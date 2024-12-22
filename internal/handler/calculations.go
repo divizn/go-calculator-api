@@ -61,14 +61,20 @@ func (h *Handler) CreateCalculation(c echo.Context) error {
 	calc := &models.Calculation{
 		ID: h.seq,
 	}
-	if err := c.Bind(calc); err != nil {
-		return err
+
+	req := new(models.CreateCalculationRequest)
+	if err := c.Bind(req); err != nil {
+		return c.JSON(http.StatusInternalServerError, err)
 	}
-	if err := validate.Struct(calc); err != nil {
+	if err := validate.Struct(req); err != nil {
 		return c.JSON(http.StatusBadRequest, map[string]string{
 			"error": err.Error(),
 		})
 	}
+
+	calc.Num1 = req.Num1
+	calc.Num2 = req.Num2
+	calc.Operator = req.Operator
 
 	err := services.CalculateResult(calc)
 	if err != nil { // should be unreachable
@@ -95,7 +101,7 @@ func (h *Handler) CreateCalculation(c echo.Context) error {
 //
 //	@Router			/calculations/{id} [put]
 func (h *Handler) UpdateCalculation(c echo.Context) error {
-	calc := new(models.Calculation)
+	calc := new(models.UpdateCalculationRequest)
 	if err := c.Bind(calc); err != nil {
 		return err
 	}

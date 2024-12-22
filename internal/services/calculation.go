@@ -34,12 +34,19 @@ func CalculateResult(calc *models.Calculation) error {
 	return nil
 }
 
-func UpdateCalculation(calc *models.Calculation, db map[int]*models.Calculation, id int) error {
+func UpdateCalculation(calc *models.UpdateCalculationRequest, db map[int]*models.Calculation, id int) error {
 
-	db[id].Num1 = calc.Num1
-	db[id].Num2 = calc.Num2
-	db[id].Operator = calc.Operator
-	CalculateResult(calc)
-	db[id].Result = calc.Result
+	if (calc.Num1) != nil {
+		db[id].Num1 = *calc.Num1
+	}
+
+	if (calc.Num2) != nil {
+		db[id].Num2 = *calc.Num2
+	}
+
+	if (calc.Operator) != nil {
+		db[id].Operator = *calc.Operator
+	}
+	CalculateResult(db[id])
 	return nil
 }
