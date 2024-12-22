@@ -18,3 +18,6 @@ dbc:
 
 docs:
 	@swag init --dir ./cmd/api --output ./docs
+
+docs-clean:
+	@rm -r docs
