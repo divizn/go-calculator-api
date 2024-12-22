@@ -1,3 +1,56 @@
+definitions:
+  models.CalcError:
+    properties:
+      message:
+        example: error message goes here
+        type: string
+    type: object
+  models.CalculationResponse:
+    properties:
+      id:
+        example: 1
+        type: integer
+      number1:
+        example: 1
+        type: number
+      number2:
+        example: 1
+        type: number
+      operator:
+        example: +
+        type: string
+      result:
+        example: 2
+        type: number
+    type: object
+  models.CreateCalculationRequest:
+    properties:
+      number1:
+        example: 1
+        type: number
+      number2:
+        example: 1
+        type: number
+      operator:
+        example: +
+        type: string
+    required:
+    - number1
+    - number2
+    - operator
+    type: object
+  models.UpdateCalculationRequest:
+    properties:
+      number1:
+        example: 1
+        type: number
+      number2:
+        example: 1
+        type: number
+      operator:
+        example: +
+        type: string
+    type: object
 info:
   contact:
     name: Repository
@@ -7,90 +60,6 @@ info:
   title: Calculator API
   version: "1.0"
 paths:
-  /calculation:
-    post:
-      consumes:
-      - application/json
-      description: Createc calculation
-      operationId: create-calculation
-      produces:
-      - application/json
-      responses:
-        "201":
-          description: created
-          schema:
-            type: string
-        "400":
-          description: bad request
-          schema:
-            type: string
-      summary: Creates a calculation
-  /calculation/{id}:
-    delete:
-      consumes:
-      - application/json
-      description: Update calculation from given ID
-      operationId: delete-calculation
-      parameters:
-      - description: Some ID
-        in: path
-        name: some_id
-        required: true
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "204":
-          description: no content
-          schema:
-            type: string
-      summary: Deletes a calculation from a given ID
-    get:
-      consumes:
-      - application/json
-      description: Get calculation by ID
-      operationId: get-calculation
-      parameters:
-      - description: Some ID
-        in: path
-        name: some_id
-        required: true
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: ok
-          schema:
-            type: string
-        "404":
-          description: not found
-          schema:
-            type: string
-      summary: Gets a calculation from the given ID
-    put:
-      consumes:
-      - application/json
-      description: Update calculation from given ID
-      operationId: update-calculation
-      parameters:
-      - description: Some ID
-        in: path
-        name: some_id
-        required: true
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: ok
-          schema:
-            type: string
-        "400":
-          description: bad request
-          schema:
-            type: string
-      summary: Updates a calculation from a given ID
   /calculations:
     get:
       consumes:
@@ -103,6 +72,102 @@ paths:
         "200":
           description: ok
           schema:
-            type: string
+            items:
+              $ref: '#/definitions/models.CalculationResponse'
+            type: array
       summary: Shows all calculations in the database
+    post:
+      consumes:
+      - application/json
+      description: Createc calculation
+      operationId: create-calculation
+      parameters:
+      - description: request body
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.CreateCalculationRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: created
+          schema:
+            $ref: '#/definitions/models.CalculationResponse'
+        "400":
+          description: bad request
+          schema:
+            $ref: '#/definitions/models.CalcError'
+      summary: Creates a calculation
+  /calculations/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Update calculation from given ID
+      operationId: delete-calculation
+      parameters:
+      - description: Some ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: no content
+      summary: Deletes a calculation from a given ID
+    get:
+      consumes:
+      - application/json
+      description: Get calculation by ID
+      operationId: get-calculation
+      parameters:
+      - description: Some ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: ok
+          schema:
+            $ref: '#/definitions/models.CalculationResponse'
+        "404":
+          description: not found
+          schema:
+            $ref: '#/definitions/models.CalcError'
+      summary: Gets a calculation from the given ID
+    put:
+      consumes:
+      - application/json
+      description: Update calculation from given ID
+      operationId: update-calculation
+      parameters:
+      - description: Some ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: request body
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.UpdateCalculationRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: ok
+          schema:
+            $ref: '#/definitions/models.CalculationResponse'
+        "400":
+          description: bad request
+          schema:
+            $ref: '#/definitions/models.CalcError'
+      summary: Updates a calculation from a given ID
 swagger: "2.0"

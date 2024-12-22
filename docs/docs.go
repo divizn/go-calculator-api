@@ -18,7 +18,29 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/calculation": {
+        "/calculations": {
+            "get": {
+                "description": "Get all calculations",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Shows all calculations in the database",
+                "operationId": "get-all-calculations",
+                "responses": {
+                    "200": {
+                        "description": "ok",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.CalculationResponse"
+                            }
+                        }
+                    }
+                }
+            },
             "post": {
                 "description": "Createc calculation",
                 "consumes": [
@@ -29,23 +51,34 @@ const docTemplate = `{
                 ],
                 "summary": "Creates a calculation",
                 "operationId": "create-calculation",
+                "parameters": [
+                    {
+                        "description": "request body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.CreateCalculationRequest"
+                        }
+                    }
+                ],
                 "responses": {
                     "201": {
                         "description": "created",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/models.CalculationResponse"
                         }
                     },
                     "400": {
                         "description": "bad request",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/models.CalcError"
                         }
                     }
                 }
             }
         },
-        "/calculation/{id}": {
+        "/calculations/{id}": {
             "get": {
                 "description": "Get calculation by ID",
                 "consumes": [
@@ -60,7 +93,7 @@ const docTemplate = `{
                     {
                         "type": "integer",
                         "description": "Some ID",
-                        "name": "some_id",
+                        "name": "id",
                         "in": "path",
                         "required": true
                     }
@@ -69,13 +102,13 @@ const docTemplate = `{
                     "200": {
                         "description": "ok",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/models.CalculationResponse"
                         }
                     },
                     "404": {
                         "description": "not found",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/models.CalcError"
                         }
                     }
                 }
@@ -94,22 +127,31 @@ const docTemplate = `{
                     {
                         "type": "integer",
                         "description": "Some ID",
-                        "name": "some_id",
+                        "name": "id",
                         "in": "path",
                         "required": true
+                    },
+                    {
+                        "description": "request body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.UpdateCalculationRequest"
+                        }
                     }
                 ],
                 "responses": {
                     "200": {
                         "description": "ok",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/models.CalculationResponse"
                         }
                     },
                     "400": {
                         "description": "bad request",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/models.CalcError"
                         }
                     }
                 }
@@ -128,39 +170,90 @@ const docTemplate = `{
                     {
                         "type": "integer",
                         "description": "Some ID",
-                        "name": "some_id",
+                        "name": "id",
                         "in": "path",
                         "required": true
                     }
                 ],
                 "responses": {
                     "204": {
-                        "description": "no content",
-                        "schema": {
-                            "type": "string"
-                        }
+                        "description": "no content"
                     }
                 }
             }
+        }
+    },
+    "definitions": {
+        "models.CalcError": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string",
+                    "example": "error message goes here"
+                }
+            }
         },
-        "/calculations": {
-            "get": {
-                "description": "Get all calculations",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "summary": "Shows all calculations in the database",
-                "operationId": "get-all-calculations",
-                "responses": {
-                    "200": {
-                        "description": "ok",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
+        "models.CalculationResponse": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "number1": {
+                    "type": "number",
+                    "example": 1
+                },
+                "number2": {
+                    "type": "number",
+                    "example": 1
+                },
+                "operator": {
+                    "type": "string",
+                    "example": "+"
+                },
+                "result": {
+                    "type": "number",
+                    "example": 2
+                }
+            }
+        },
+        "models.CreateCalculationRequest": {
+            "type": "object",
+            "required": [
+                "number1",
+                "number2",
+                "operator"
+            ],
+            "properties": {
+                "number1": {
+                    "type": "number",
+                    "example": 1
+                },
+                "number2": {
+                    "type": "number",
+                    "example": 1
+                },
+                "operator": {
+                    "type": "string",
+                    "example": "+"
+                }
+            }
+        },
+        "models.UpdateCalculationRequest": {
+            "type": "object",
+            "properties": {
+                "number1": {
+                    "type": "number",
+                    "example": 1
+                },
+                "number2": {
+                    "type": "number",
+                    "example": 1
+                },
+                "operator": {
+                    "type": "string",
+                    "example": "+"
                 }
             }
         }

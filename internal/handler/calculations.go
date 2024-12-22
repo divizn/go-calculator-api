@@ -17,7 +17,7 @@ import (
 //	@ID				get-all-calculations
 //	@Accept			json
 //	@Produce		json
-//	@Success		200	{string}	string	"ok"
+//	@Success		200	{array}	models.CalculationResponse	"ok"
 //	@Router			/calculations [get]
 func (h *Handler) GetAllCalculations(c echo.Context) error {
 	return c.JSON(http.StatusOK, h.Db_OLD)
@@ -28,13 +28,13 @@ func (h *Handler) GetAllCalculations(c echo.Context) error {
 //	@Summary		Gets a calculation from the given ID
 //	@Description	Get calculation by ID
 //	@ID				get-calculation
-//	@Param			some_id	path	int	true	"Some ID"
+//	@Param			id	path	int	true	"Some ID"
 //	@Accept			json
 //	@Produce		json
-//	@Success		200	{string}	string	"ok"
-//	@Failure		404	{string}	string	"not found"
+//	@Success		200	{object}	models.CalculationResponse	"ok"
+//	@Failure		404	{object}	models.CalcError			"not found"
 //
-//	@Router			/calculation/{id} [get]
+//	@Router			/calculations/{id} [get]
 func (h *Handler) GetCalculation(c echo.Context) error {
 	id, _ := strconv.Atoi(c.Param("id"))
 
@@ -50,12 +50,13 @@ func (h *Handler) GetCalculation(c echo.Context) error {
 //	@Summary		Creates a calculation
 //	@Description	Createc calculation
 //	@ID				create-calculation
+//	@Param			request	body	models.CreateCalculationRequest	true	"request body"
 //	@Accept			json
 //	@Produce		json
-//	@Success		201	{string}	string	"created"
-//	@Failure		400	{string}	string	"bad request"
+//	@Success		201	{object}	models.CalculationResponse	"created"
+//	@Failure		400	{object}	models.CalcError			"bad request"
 //
-//	@Router			/calculation [post]
+//	@Router			/calculations [post]
 func (h *Handler) CreateCalculation(c echo.Context) error {
 	calc := &models.Calculation{
 		ID: h.seq,
@@ -85,13 +86,14 @@ func (h *Handler) CreateCalculation(c echo.Context) error {
 //	@Summary		Updates a calculation from a given ID
 //	@Description	Update calculation from given ID
 //	@ID				update-calculation
-//	@Param			some_id	path	int	true	"Some ID"
+//	@Param			id		path	int								true	"Some ID"
+//	@Param			request	body	models.UpdateCalculationRequest	true	"request body"
 //	@Accept			json
 //	@Produce		json
-//	@Success		200	{string}	string	"ok"
-//	@Failure		400	{string}	string	"bad request"
+//	@Success		200	{object}	models.CalculationResponse	"ok"
+//	@Failure		400	{object}	models.CalcError			"bad request"
 //
-//	@Router			/calculation/{id} [put]
+//	@Router			/calculations/{id} [put]
 func (h *Handler) UpdateCalculation(c echo.Context) error {
 	calc := new(models.Calculation)
 	if err := c.Bind(calc); err != nil {
@@ -115,12 +117,12 @@ func (h *Handler) UpdateCalculation(c echo.Context) error {
 //	@Summary		Deletes a calculation from a given ID
 //	@Description	Update calculation from given ID
 //	@ID				delete-calculation
-//	@Param			some_id	path	int	true	"Some ID"
+//	@Param			id	path	int	true	"Some ID"
 //	@Accept			json
 //	@Produce		json
-//	@Success		204	{string}	string	"no content"
+//	@Success		204	"no content"
 //
-//	@Router			/calculation/{id} [delete]
+//	@Router			/calculations/{id} [delete]
 func (h *Handler) DeleteCalculation(c echo.Context) error {
 	id, _ := strconv.Atoi(c.Param("id"))
 	delete(h.Db_OLD, id)
