@@ -1,3 +1,5 @@
+.PHONY: docs
+
 build:
 	@echo "Building project..."
 
@@ -19,5 +21,3 @@ dbc:
 docs:
 	@swag init --dir ./cmd/api --output ./docs
 
-docs-clean:
-	@rm -r docs
