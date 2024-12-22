@@ -6,5 +6,103 @@ info:
     result in a database.
   title: Calculator API
   version: "1.0"
-paths: {}
+paths:
+  /calculation:
+    post:
+      consumes:
+      - application/json
+      description: Createc calculation
+      operationId: create-calculation
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: created
+          schema:
+            type: string
+        "400":
+          description: bad request
+          schema:
+            type: string
+      summary: Creates a calculation
+  /calculation/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Update calculation from given ID
+      operationId: delete-calculation
+      parameters:
+      - description: Some ID
+        in: path
+        name: some_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: no content
+          schema:
+            type: string
+      summary: Deletes a calculation from a given ID
+    get:
+      consumes:
+      - application/json
+      description: Get calculation by ID
+      operationId: get-calculation
+      parameters:
+      - description: Some ID
+        in: path
+        name: some_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: ok
+          schema:
+            type: string
+        "404":
+          description: not found
+          schema:
+            type: string
+      summary: Gets a calculation from the given ID
+    put:
+      consumes:
+      - application/json
+      description: Update calculation from given ID
+      operationId: update-calculation
+      parameters:
+      - description: Some ID
+        in: path
+        name: some_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: ok
+          schema:
+            type: string
+        "400":
+          description: bad request
+          schema:
+            type: string
+      summary: Updates a calculation from a given ID
+  /calculations:
+    get:
+      consumes:
+      - application/json
+      description: Get all calculations
+      operationId: get-all-calculations
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: ok
+          schema:
+            type: string
+      summary: Shows all calculations in the database
 swagger: "2.0"
