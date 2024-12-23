@@ -12,7 +12,7 @@ run:
 	@go run cmd/api/main.gom
 
 db:
-	@docker compose up
+	@docker compose up -d
 
 
 dbc:
