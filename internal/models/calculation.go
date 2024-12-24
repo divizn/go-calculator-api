@@ -6,7 +6,6 @@ import (
 	"github.com/go-playground/validator/v10"
 )
 
-// TODO: deprecate this struct and use the ones below
 type Calculation struct {
 	Num1     float32 `json:"number1" validate:"required" example:"1"`
 	Num2     float32 `json:"number2" validate:"required" example:"1"`
