@@ -1,3 +1,5 @@
+include .env
+
 .PHONY: docs
 
 build:
@@ -21,3 +23,10 @@ dbc:
 docs:
 	@swag init --dir ./cmd/api,internal/handler,internal/models --output ./docs
 
+
+goose-up:
+	@goose up
+
+
+goose-down:
+	@goose down
