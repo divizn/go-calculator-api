@@ -12,7 +12,7 @@ import (
 	_ "github.com/joho/godotenv/autoload"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
-	echoSwagger "github.com/swaggo/echo-swagger" // echo-swagger middleware
+	echoSwagger "github.com/swaggo/echo-swagger"
 )
 
 // @title			Calculator API
