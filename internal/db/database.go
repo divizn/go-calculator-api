@@ -19,14 +19,14 @@ func InitDB() (*pgxpool.Pool, error) {
 		os.Exit(1)
 	}
 
-	var greeting string
-	err = dbpool.QueryRow(context.Background(), "select 'Test DB query successful\n\n'").Scan(&greeting)
+	var testConnection string
+	err = dbpool.QueryRow(context.Background(), "select 'Test DB query successful\n\n'").Scan(&testConnection)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "QueryRow failed: %v\n", err)
 		return nil, err
 	}
 
-	fmt.Println(greeting)
+	fmt.Println(testConnection)
 
 	return dbpool, nil
 }
