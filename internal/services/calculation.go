@@ -99,6 +99,10 @@ func GetAllCalculations(db *pgxpool.Pool) ([]*models.Calculation, error) {
 		return nil, fmt.Errorf("error iterating rows: %v", rows.Err())
 	}
 
+	if calculations == nil {
+		return nil, fmt.Errorf("no calculations in db")
+	}
+
 	return calculations, nil
 }
 
