@@ -1,7 +1,7 @@
 package handler
 
 import (
-	"fmt"
+	"context"
 	"net/http"
 	"strconv"
 
@@ -20,7 +20,14 @@ import (
 //	@Success		200	{array}	models.Calculation	"ok"
 //	@Router			/calculations [get]
 func (h *Handler) GetAllCalculations(c echo.Context) error {
-	return c.JSON(http.StatusOK, h.Db_OLD)
+	calculations, err := services.GetAllCalculations(h.Db)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]string{
+			"error": err.Error(),
+		})
+	}
+
+	return c.JSON(http.StatusOK, calculations)
 }
 
 // GetCalculation example
@@ -38,11 +45,13 @@ func (h *Handler) GetAllCalculations(c echo.Context) error {
 func (h *Handler) GetCalculation(c echo.Context) error {
 	id, _ := strconv.Atoi(c.Param("id"))
 
-	_, ok := h.Db_OLD[id]
-	if !ok {
-		return c.JSON(http.StatusNotFound, models.CalcError{Message: fmt.Sprintf("Could not find calculation for ID %v", id)})
+	calc, err := services.GetCalculationByID(h.Db, id)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]string{
+			"error": err.Error(),
+		})
 	}
-	return c.JSON(http.StatusOK, h.Db_OLD[id])
+	return c.JSON(http.StatusOK, calc)
 }
 
 // CreateCalculation example
@@ -58,32 +67,45 @@ func (h *Handler) GetCalculation(c echo.Context) error {
 //
 //	@Router			/calculations [post]
 func (h *Handler) CreateCalculation(c echo.Context) error {
-	calc := &models.Calculation{
-		ID: h.seq,
-	}
-
 	req := new(models.CreateCalculationRequest)
 	if err := c.Bind(req); err != nil {
-		return c.JSON(http.StatusInternalServerError, err)
+		return c.JSON(http.StatusInternalServerError, map[string]string{
+			"error": "Failed to bind request",
+		})
 	}
-	if err := validate.Struct(req); err != nil {
+	if err := h.validate.Struct(req); err != nil {
 		return c.JSON(http.StatusBadRequest, map[string]string{
 			"error": err.Error(),
 		})
 	}
 
-	calc.Num1 = req.Num1
-	calc.Num2 = req.Num2
-	calc.Operator = req.Operator
-
-	err := services.CalculateResult(calc)
-	if err != nil { // should be unreachable
-		return c.JSON(http.StatusBadRequest, err)
+	calc := &models.Calculation{
+		Num1:     req.Num1,
+		Num2:     req.Num2,
+		Operator: req.Operator,
+	}
+	if err := services.CalculateResult(calc); err != nil {
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"error": err.Error(),
+		})
 	}
 
-	h.Db_OLD[calc.ID] = calc
-	h.seq++
+	// Create query
+	query := `
+        INSERT INTO calculations (num1, num2, operator, result)
+        VALUES ($1, $2, $3, $4)
+        RETURNING id
+    `
+	row := h.Db.QueryRow(context.Background(), query, calc.Num1, calc.Num2, calc.Operator, calc.Result)
 
+	// Get the newly created ID
+	if err := row.Scan(&calc.ID); err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]string{
+			"error": "Failed to insert calculation into the database",
+		})
+	}
+
+	// Return the created calculation
 	return c.JSON(http.StatusCreated, calc)
 }
 
@@ -103,19 +125,34 @@ func (h *Handler) CreateCalculation(c echo.Context) error {
 func (h *Handler) UpdateCalculation(c echo.Context) error {
 	calc := new(models.UpdateCalculationRequest)
 	if err := c.Bind(calc); err != nil {
-		return err
+		return c.JSON(http.StatusInternalServerError, map[string]string{
+			"error": "Failed to bind request",
+		})
 	}
-	if err := validate.Struct(calc); err != nil {
+	if err := h.validate.Struct(calc); err != nil {
 		return c.JSON(http.StatusBadRequest, map[string]string{
 			"error": err.Error(),
 		})
 	}
-	id, _ := strconv.Atoi(c.Param("id"))
-	err := services.UpdateCalculation(calc, h.Db_OLD, id)
+
+	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, map[string]string{"error": err.Error()})
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"error": "Invalid ID",
+		})
 	}
-	return c.JSON(http.StatusOK, h.Db_OLD[id])
+
+	updatedCalc, err := services.UpdateCalculation(h.Db, id, calc)
+	if err != nil {
+		if err.Error() == "calculation not found" {
+			return c.JSON(http.StatusNotFound, map[string]string{"error": err.Error()})
+		}
+		return c.JSON(http.StatusInternalServerError, map[string]string{
+			"error": err.Error(),
+		})
+	}
+
+	return c.JSON(http.StatusOK, updatedCalc)
 }
 
 // DeleteCalculation example
@@ -131,6 +168,10 @@ func (h *Handler) UpdateCalculation(c echo.Context) error {
 //	@Router			/calculations/{id} [delete]
 func (h *Handler) DeleteCalculation(c echo.Context) error {
 	id, _ := strconv.Atoi(c.Param("id"))
-	delete(h.Db_OLD, id)
+	if err := services.DeleteCalculation(h.Db, id); err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]string{
+			"error": err.Error(),
+		})
+	}
 	return c.NoContent(http.StatusNoContent)
 }

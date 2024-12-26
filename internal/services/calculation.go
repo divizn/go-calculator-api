@@ -1,10 +1,14 @@
 package services
 
 import (
+	"context"
 	"errors"
+	"fmt"
 	"math"
 
 	"github.com/divizn/echo-calculator/internal/models"
+	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 func CalculateResult(calc *models.Calculation) error {
@@ -34,19 +38,95 @@ func CalculateResult(calc *models.Calculation) error {
 	return nil
 }
 
-func UpdateCalculation(calc *models.UpdateCalculationRequest, db map[int]*models.Calculation, id int) error {
-
-	if (calc.Num1) != nil {
-		db[id].Num1 = *calc.Num1
+func UpdateCalculation(db *pgxpool.Pool, id int, calc *models.UpdateCalculationRequest) (*models.Calculation, error) {
+	query := "SELECT num1, num2, operator FROM calculations WHERE id = $1"
+	existingCalc := &models.Calculation{ID: id}
+	err := db.QueryRow(context.Background(), query, id).Scan(&existingCalc.Num1, &existingCalc.Num2, &existingCalc.Operator)
+	if err != nil {
+		if err == pgx.ErrNoRows {
+			return nil, fmt.Errorf("calculation not found")
+		}
+		return nil, fmt.Errorf("failed to fetch calculation: %v", err)
 	}
 
-	if (calc.Num2) != nil {
-		db[id].Num2 = *calc.Num2
+	if calc.Num1 != nil {
+		existingCalc.Num1 = *calc.Num1
+	}
+	if calc.Num2 != nil {
+		existingCalc.Num2 = *calc.Num2
+	}
+	if calc.Operator != nil {
+		existingCalc.Operator = *calc.Operator
 	}
 
-	if (calc.Operator) != nil {
-		db[id].Operator = *calc.Operator
+	if err := CalculateResult(existingCalc); err != nil {
+		return nil, fmt.Errorf("failed to calculate result: %v", err)
 	}
-	CalculateResult(db[id])
+
+	// Update query
+	updateQuery := `
+        UPDATE calculations
+        SET num1 = $1, num2 = $2, operator = $3, result = $4
+        WHERE id = $5
+    `
+	_, err = db.Exec(context.Background(), updateQuery, existingCalc.Num1, existingCalc.Num2, existingCalc.Operator, existingCalc.Result, id)
+	if err != nil {
+		return nil, fmt.Errorf("failed to update calculation: %v", err)
+	}
+
+	return existingCalc, nil
+}
+
+func GetAllCalculations(db *pgxpool.Pool) ([]*models.Calculation, error) {
+	query := "SELECT id, num1, num2, operator, result FROM calculations"
+	rows, err := db.Query(context.Background(), query)
+	if err != nil {
+		return nil, fmt.Errorf("failed to fetch calculations: %v", err)
+	}
+	defer rows.Close()
+
+	var calculations []*models.Calculation
+	for rows.Next() {
+		calc := &models.Calculation{}
+		err := rows.Scan(&calc.ID, &calc.Num1, &calc.Num2, &calc.Operator, &calc.Result)
+		if err != nil {
+			return nil, fmt.Errorf("failed to scan calculation: %v", err)
+		}
+		calculations = append(calculations, calc)
+	}
+
+	if rows.Err() != nil {
+		return nil, fmt.Errorf("error iterating rows: %v", rows.Err())
+	}
+
+	return calculations, nil
+}
+
+func GetCalculationByID(db *pgxpool.Pool, id int) (*models.Calculation, error) {
+	query := "SELECT id, num1, num2, operator, result FROM calculations WHERE id = $1"
+	calc := &models.Calculation{}
+	err := db.QueryRow(context.Background(), query, id).Scan(&calc.ID, &calc.Num1, &calc.Num2, &calc.Operator, &calc.Result)
+	if err != nil {
+		if err == pgx.ErrNoRows {
+			return nil, fmt.Errorf("calculation not found")
+		}
+		return nil, fmt.Errorf("failed to fetch calculation: %v", err)
+	}
+
+	return calc, nil
+}
+
+func DeleteCalculation(db *pgxpool.Pool, id int) error {
+	query := "DELETE FROM calculations WHERE id = $1"
+
+	cmdTag, err := db.Exec(context.Background(), query, id)
+	if err != nil {
+		return err
+	}
+
+	if cmdTag.RowsAffected() == 0 {
+		return fmt.Errorf("no calculation found with id %d", id)
+	}
+
 	return nil
 }

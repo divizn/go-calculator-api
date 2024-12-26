@@ -4,7 +4,6 @@ import (
 	"log"
 
 	"github.com/divizn/echo-calculator/internal/handler"
-	"github.com/divizn/echo-calculator/internal/models"
 	"github.com/divizn/echo-calculator/internal/utils"
 
 	_ "github.com/divizn/echo-calculator/docs"
@@ -14,10 +13,6 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	echoSwagger "github.com/swaggo/echo-swagger" // echo-swagger middleware
-)
-
-var (
-	db = map[int]*models.Calculation{}
 )
 
 // @title			Calculator API
@@ -39,7 +34,7 @@ func main() {
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
 
-	h := handler.New(db)
+	h := handler.New()
 
 	defer h.Db.Close() // close pool on server shut down todo: not graceful
 
