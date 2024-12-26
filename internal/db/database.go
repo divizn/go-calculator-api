@@ -9,10 +9,6 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-// TODO:
-// database
-// functions for creating, updating by id, retrieving by id, and getting all entries (maybe in chunks research pagination)
-
 // initialise the db and return a pointer to the connection pool to be utilised in handler.Handler
 func InitDB() (*pgxpool.Pool, error) {
 	var env utils.IConfig
@@ -24,7 +20,7 @@ func InitDB() (*pgxpool.Pool, error) {
 	}
 
 	var greeting string
-	err = dbpool.QueryRow(context.Background(), "select 'Hello, world!'").Scan(&greeting)
+	err = dbpool.QueryRow(context.Background(), "select 'Test DB query successful\n\n'").Scan(&greeting)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "QueryRow failed: %v\n", err)
 		return nil, err
