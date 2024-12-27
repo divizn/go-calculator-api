@@ -1,6 +1,8 @@
 package utils
 
 import (
+	"fmt"
+
 	"github.com/caarlos0/env/v11"
 	"github.com/go-playground/validator/v10"
 )
@@ -16,6 +18,7 @@ type (
 		DB_PASSWORD string `env:"DB_PASSWORD" validate:"required"`
 		DB_SCHEMA   string `env:"DB_SCHEMA" validate:"required"`
 		DB_URL      string `env:"DB_URL" validate:"required"`
+		JWT_SECRET  string `env:"JWT_SECRET" validate:"required"`
 	}
 )
 
@@ -28,7 +31,7 @@ func (c *IConfig) New() error {
 
 	err = validate.Struct(c)
 	if err != nil {
-		return err
+		return fmt.Errorf("error loading environment variables: %v", err)
 	}
 
 	return nil
