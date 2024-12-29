@@ -3,17 +3,13 @@ package main
 import (
 	"log"
 
-	"github.com/divizn/echo-calculator/internal/handler"
+	"github.com/divizn/echo-calculator/internal/app"
+	"github.com/divizn/echo-calculator/internal/db"
 	"github.com/divizn/echo-calculator/internal/utils"
 
 	_ "github.com/divizn/echo-calculator/docs"
 
-	"github.com/joho/godotenv"
 	_ "github.com/joho/godotenv/autoload"
-	echojwt "github.com/labstack/echo-jwt/v4"
-	"github.com/labstack/echo/v4"
-	"github.com/labstack/echo/v4/middleware"
-	echoSwagger "github.com/swaggo/echo-swagger"
 )
 
 // @title			Calculator API
@@ -22,32 +18,18 @@ import (
 // @contact.name	Repository
 // @contact.url	http://github.com/divizn/go-calculator-api
 func main() {
-	godotenv.Load()
-
-	var env utils.IConfig
-	err := env.New()
+	config, err := utils.NewConfig()
 	if err != nil {
-		log.Fatal("Could not load environment variables (check if they are present)")
+		log.Fatal("Could not load environment variables (check if they are present)", err)
 	}
 
-	e := echo.New()
+	db, err := db.InitDB(config)
+	if err != nil {
+		log.Fatal("Database was not successfully initialised, exiting...")
+	}
 
-	e.Use(middleware.Logger())
-	e.Use(middleware.Recover())
+	app := app.NewApp(db)
+	defer app.Db.Close() // close pool on server shut down todo: not graceful
 
-	e.Use(echojwt.JWT([]byte(env.JWT_SECRET)))
-
-	h := handler.New()
-
-	defer h.Db.Close() // close pool on server shut down todo: not graceful
-
-	e.GET("/swagger/*", echoSwagger.WrapHandler)
-
-	e.GET("/calculations", h.GetAllCalculations)
-	e.POST("/calculations", h.CreateCalculation)
-	e.GET("/calculations/:id", h.GetCalculation)
-	e.PUT("/calculations/:id", h.UpdateCalculation)
-	e.DELETE("/calculations/:id", h.DeleteCalculation)
-
-	e.Logger.Fatal(e.Start(":1323"))
+	app.Echo.Logger.Fatal(app.Echo.Start(config.SERVER_ADDR))
 }

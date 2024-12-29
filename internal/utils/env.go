@@ -9,7 +9,7 @@ import (
 
 type (
 	IConfig struct {
-		PORT        int    `env:"PORT" validate:"required"`
+		SERVER_ADDR string `env:"SERVER_ADDR" validate:"required"`
 		APP_ENV     string `env:"APP_ENV" validate:"required"`
 		DB_HOST     string `env:"DB_HOST" validate:"required"`
 		DB_PORT     int    `env:"DB_PORT" validate:"required"`
@@ -22,17 +22,19 @@ type (
 	}
 )
 
-func (c *IConfig) New() error {
+func NewConfig() (*IConfig, error) {
+	cfg := &IConfig{}
+
+	err := env.Parse(cfg)
+	if err != nil {
+		return nil, err
+	}
+
 	validate := validator.New(validator.WithRequiredStructEnabled())
-	err := env.Parse(c)
+	err = validate.Struct(cfg)
 	if err != nil {
-		return err
+		return nil, fmt.Errorf("error loading environment variables: %v", err)
 	}
 
-	err = validate.Struct(c)
-	if err != nil {
-		return fmt.Errorf("error loading environment variables: %v", err)
-	}
-
-	return nil
+	return cfg, nil
 }

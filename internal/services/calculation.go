@@ -108,9 +108,12 @@ func GetAllCalculations(db *pgxpool.Pool) ([]*models.Calculation, error) {
 
 func GetCalculationByID(db *pgxpool.Pool, id int) (*models.Calculation, error) {
 	query := "SELECT id, num1, num2, operator, result FROM calculations WHERE id = $1"
+
+	// TODO: check if number postive int
 	calc := &models.Calculation{}
 	err := db.QueryRow(context.Background(), query, id).Scan(&calc.ID, &calc.Num1, &calc.Num2, &calc.Operator, &calc.Result)
 	if err != nil {
+		// TODO return error instead and check error there
 		if err == pgx.ErrNoRows {
 			return nil, fmt.Errorf("calculation not found")
 		}
@@ -121,6 +124,7 @@ func GetCalculationByID(db *pgxpool.Pool, id int) (*models.Calculation, error) {
 }
 
 func DeleteCalculation(db *pgxpool.Pool, id int) error {
+	// TODO: call getcalbyid to check whether this id exists, and then modify, since delete is costly just like updating so we need to check if it exists with a low cost select first
 	query := "DELETE FROM calculations WHERE id = $1"
 
 	cmdTag, err := db.Exec(context.Background(), query, id)
