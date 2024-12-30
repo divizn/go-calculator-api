@@ -9,9 +9,10 @@ import (
 	"github.com/divizn/echo-calculator/internal/models"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/labstack/echo/v4"
 )
 
-func CalculateResult(calc *models.Calculation) error {
+func calculateResult(calc *models.Calculation) error {
 
 	switch calc.Operator {
 	case "+":
@@ -38,15 +39,10 @@ func CalculateResult(calc *models.Calculation) error {
 	return nil
 }
 
-func UpdateCalculation(db *pgxpool.Pool, id int, calc *models.UpdateCalculationRequest) (*models.Calculation, error) {
-	query := "SELECT num1, num2, operator FROM calculations WHERE id = $1"
-	existingCalc := &models.Calculation{ID: id}
-	err := db.QueryRow(context.Background(), query, id).Scan(&existingCalc.Num1, &existingCalc.Num2, &existingCalc.Operator)
+func UpdateCalculation(db *pgxpool.Pool, id int, calc *models.UpdateCalculationRequest, ctx echo.Context) (*models.Calculation, error) {
+	existingCalc, err := GetCalculationByID(db, id, ctx)
 	if err != nil {
-		if err == pgx.ErrNoRows {
-			return nil, fmt.Errorf("calculation not found")
-		}
-		return nil, fmt.Errorf("failed to fetch calculation: %v", err)
+		return nil, err
 	}
 
 	if calc.Num1 != nil {
@@ -59,7 +55,7 @@ func UpdateCalculation(db *pgxpool.Pool, id int, calc *models.UpdateCalculationR
 		existingCalc.Operator = *calc.Operator
 	}
 
-	if err := CalculateResult(existingCalc); err != nil {
+	if err := calculateResult(existingCalc); err != nil {
 		return nil, fmt.Errorf("failed to calculate result: %v", err)
 	}
 
@@ -106,14 +102,15 @@ func GetAllCalculations(db *pgxpool.Pool) ([]*models.Calculation, error) {
 	return calculations, nil
 }
 
-func GetCalculationByID(db *pgxpool.Pool, id int) (*models.Calculation, error) {
-	query := "SELECT id, num1, num2, operator, result FROM calculations WHERE id = $1"
+func GetCalculationByID(db *pgxpool.Pool, id int, ctx echo.Context) (*models.Calculation, error) {
+	if id <= 0 {
+		return nil, fmt.Errorf("id cannot be 0 or less")
+	}
 
-	// TODO: check if number postive int
+	query := "SELECT id, num1, num2, operator, result FROM calculations WHERE id = $1"
 	calc := &models.Calculation{}
 	err := db.QueryRow(context.Background(), query, id).Scan(&calc.ID, &calc.Num1, &calc.Num2, &calc.Operator, &calc.Result)
 	if err != nil {
-		// TODO return error instead and check error there
 		if err == pgx.ErrNoRows {
 			return nil, fmt.Errorf("calculation not found")
 		}
@@ -123,8 +120,11 @@ func GetCalculationByID(db *pgxpool.Pool, id int) (*models.Calculation, error) {
 	return calc, nil
 }
 
-func DeleteCalculation(db *pgxpool.Pool, id int) error {
-	// TODO: call getcalbyid to check whether this id exists, and then modify, since delete is costly just like updating so we need to check if it exists with a low cost select first
+func DeleteCalculation(db *pgxpool.Pool, id int, ctx echo.Context) error {
+	_, err := GetCalculationByID(db, id, ctx) // get calculation first since deleting is costly unlike select, so first use select to check if the id is valid to save db costs
+	if err != nil {
+		return err
+	}
 	query := "DELETE FROM calculations WHERE id = $1"
 
 	cmdTag, err := db.Exec(context.Background(), query, id)
@@ -137,4 +137,29 @@ func DeleteCalculation(db *pgxpool.Pool, id int) error {
 	}
 
 	return nil
+}
+
+func CreateCalculation(db *pgxpool.Pool, req *models.CreateCalculationRequest) (*models.Calculation, error) {
+	calc := &models.Calculation{
+		Num1:     req.Num1,
+		Num2:     req.Num2,
+		Operator: req.Operator,
+	}
+	if err := calculateResult(calc); err != nil {
+		return nil, fmt.Errorf("failed to calculate result: %v", err)
+	}
+
+	// Create query
+	query := `
+        INSERT INTO calculations (num1, num2, operator, result)
+        VALUES ($1, $2, $3, $4)
+        RETURNING id
+    `
+	row := db.QueryRow(context.Background(), query, calc.Num1, calc.Num2, calc.Operator, calc.Result)
+
+	// Get the newly created ID
+	if err := row.Scan(&calc.ID); err != nil {
+		return nil, fmt.Errorf("failed to scan calculation: %v", err)
+	}
+	return calc, nil
 }
