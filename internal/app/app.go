@@ -29,5 +29,9 @@ func NewApp(db *db.Database) *App {
 	calculations.PUT("/:id", h.UpdateCalculation)
 	calculations.DELETE("/:id", h.DeleteCalculation)
 
+	users := e.Group("/users")
+	users.POST("/login", h.LoginUser)
+	users.POST("/register", h.RegisterUser)
+
 	return &App{Echo: e, Db: db}
 }
