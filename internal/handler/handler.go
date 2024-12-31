@@ -3,6 +3,7 @@ package handler
 import (
 	"github.com/divizn/echo-calculator/internal/db"
 	"github.com/divizn/echo-calculator/internal/models"
+	"github.com/divizn/echo-calculator/internal/services"
 	"github.com/go-playground/validator/v10"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -13,6 +14,7 @@ type (
 	Handler struct {
 		Db       *pgxpool.Pool
 		validate *validator.Validate
+		Service  *services.Service
 	}
 )
 
@@ -22,6 +24,7 @@ func NewHandler(db *db.Database) *Handler {
 	handler := &Handler{
 		Db:       db.Pool,
 		validate: validate,
+		Service:  services.NewService(),
 	}
 
 	return handler

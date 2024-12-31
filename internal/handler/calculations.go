@@ -5,7 +5,6 @@ import (
 	"strconv"
 
 	"github.com/divizn/echo-calculator/internal/models"
-	"github.com/divizn/echo-calculator/internal/services"
 	"github.com/labstack/echo/v4"
 )
 
@@ -19,7 +18,7 @@ import (
 //	@Success		200	{array}	models.Calculation	"ok"
 //	@Router			/calculations [get]
 func (h *Handler) GetAllCalculations(c echo.Context) error {
-	calculations, err := services.GetAllCalculations(h.Db)
+	calculations, err := h.Service.GetAllCalculations(h.Db)
 	if err != nil {
 		return models.Return500InternalServerError(c, err)
 	}
@@ -45,7 +44,7 @@ func (h *Handler) GetCalculation(c echo.Context) error {
 		return models.Return400BadRequest(c)
 	}
 
-	calc, err := services.GetCalculationByID(h.Db, id, c)
+	calc, err := h.Service.GetCalculationByID(h.Db, id, c)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, map[string]string{
 			"error": err.Error(),
@@ -79,7 +78,7 @@ func (h *Handler) CreateCalculation(c echo.Context) error {
 		})
 	}
 
-	calc, err := services.CreateCalculation(h.Db, req)
+	calc, err := h.Service.CreateCalculation(h.Db, req)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, map[string]string{
 			"error": "Failed to create calculation	",
@@ -123,7 +122,7 @@ func (h *Handler) UpdateCalculation(c echo.Context) error {
 		})
 	}
 
-	updatedCalc, err := services.UpdateCalculation(h.Db, id, calc, c)
+	updatedCalc, err := h.Service.UpdateCalculation(h.Db, id, calc, c)
 	if err != nil {
 		if err.Error() == "calculation not found" {
 			return c.JSON(http.StatusNotFound, map[string]string{"error": err.Error()})
@@ -152,7 +151,7 @@ func (h *Handler) DeleteCalculation(c echo.Context) error {
 	if err != nil {
 		return models.Return400BadRequest(c)
 	}
-	if err := services.DeleteCalculation(h.Db, id, c); err != nil {
+	if err := h.Service.DeleteCalculation(h.Db, id, c); err != nil {
 		return c.JSON(http.StatusNotFound, map[string]string{
 			"error": err.Error(),
 		})

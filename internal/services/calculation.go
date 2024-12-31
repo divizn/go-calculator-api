@@ -12,7 +12,7 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-func calculateResult(calc *models.Calculation) error {
+func (s *Service) calculateResult(calc *models.Calculation) error {
 
 	switch calc.Operator {
 	case "+":
@@ -39,8 +39,8 @@ func calculateResult(calc *models.Calculation) error {
 	return nil
 }
 
-func UpdateCalculation(db *pgxpool.Pool, id int, calc *models.UpdateCalculationRequest, ctx echo.Context) (*models.Calculation, error) {
-	existingCalc, err := GetCalculationByID(db, id, ctx)
+func (s *Service) UpdateCalculation(db *pgxpool.Pool, id int, calc *models.UpdateCalculationRequest, ctx echo.Context) (*models.Calculation, error) {
+	existingCalc, err := s.GetCalculationByID(db, id, ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -55,7 +55,7 @@ func UpdateCalculation(db *pgxpool.Pool, id int, calc *models.UpdateCalculationR
 		existingCalc.Operator = *calc.Operator
 	}
 
-	if err := calculateResult(existingCalc); err != nil {
+	if err := s.calculateResult(existingCalc); err != nil {
 		return nil, fmt.Errorf("failed to calculate result: %v", err)
 	}
 
@@ -73,7 +73,7 @@ func UpdateCalculation(db *pgxpool.Pool, id int, calc *models.UpdateCalculationR
 	return existingCalc, nil
 }
 
-func GetAllCalculations(db *pgxpool.Pool) ([]*models.Calculation, error) {
+func (s *Service) GetAllCalculations(db *pgxpool.Pool) ([]*models.Calculation, error) {
 	query := "SELECT id, num1, num2, operator, result FROM calculations"
 	rows, err := db.Query(context.Background(), query)
 	if err != nil {
@@ -102,7 +102,7 @@ func GetAllCalculations(db *pgxpool.Pool) ([]*models.Calculation, error) {
 	return calculations, nil
 }
 
-func GetCalculationByID(db *pgxpool.Pool, id int, ctx echo.Context) (*models.Calculation, error) {
+func (s *Service) GetCalculationByID(db *pgxpool.Pool, id int, ctx echo.Context) (*models.Calculation, error) {
 	if id <= 0 {
 		return nil, fmt.Errorf("id cannot be 0 or less")
 	}
@@ -120,8 +120,8 @@ func GetCalculationByID(db *pgxpool.Pool, id int, ctx echo.Context) (*models.Cal
 	return calc, nil
 }
 
-func DeleteCalculation(db *pgxpool.Pool, id int, ctx echo.Context) error {
-	_, err := GetCalculationByID(db, id, ctx) // get calculation first since deleting is costly unlike select, so first use select to check if the id is valid to save db costs
+func (s *Service) DeleteCalculation(db *pgxpool.Pool, id int, ctx echo.Context) error {
+	_, err := s.GetCalculationByID(db, id, ctx) // get calculation first since deleting is costly unlike select, so first use select to check if the id is valid to save db costs
 	if err != nil {
 		return err
 	}
@@ -139,13 +139,13 @@ func DeleteCalculation(db *pgxpool.Pool, id int, ctx echo.Context) error {
 	return nil
 }
 
-func CreateCalculation(db *pgxpool.Pool, req *models.CreateCalculationRequest) (*models.Calculation, error) {
+func (s *Service) CreateCalculation(db *pgxpool.Pool, req *models.CreateCalculationRequest) (*models.Calculation, error) {
 	calc := &models.Calculation{
 		Num1:     req.Num1,
 		Num2:     req.Num2,
 		Operator: req.Operator,
 	}
-	if err := calculateResult(calc); err != nil {
+	if err := s.calculateResult(calc); err != nil {
 		return nil, fmt.Errorf("failed to calculate result: %v", err)
 	}
 
