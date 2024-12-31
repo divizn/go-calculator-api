@@ -27,7 +27,7 @@ type UpdateCalculationRequest struct {
 }
 
 type CalcError struct {
-	Message string `json:"message" example:"error message goes here"`
+	Message string `json:"message" example:"calculation error occured"`
 }
 
 var validate *validator.Validate

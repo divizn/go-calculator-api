@@ -17,8 +17,8 @@ import (
 //	@Accept			json
 //	@Produce		json
 //	@Success		201	{object}	models.User		"created"
-//	@Failure		400	{object}	models.Error	"bad request"
-//	@Failure		500	{object}	models.Error	"internal server error"
+//	@Failure		400	{object}	models.UserError	"bad request"
+//	@Failure		500	{object}	models.UserError	"internal server error"
 //	@Router			/users/register [post]
 func (h *Handler) RegisterUser(c echo.Context) error {
 	req := new(models.RegisterUserRequest)
@@ -53,9 +53,9 @@ func (h *Handler) RegisterUser(c echo.Context) error {
 //	@Accept			json
 //	@Produce		json
 //	@Success		200	{object}	models.LoginResponse	"logged in"
-//	@Failure		400	{object}	models.Error			"bad request"
-//	@Failure		401	{object}	models.Error			"unauthorized"
-//	@Failure		500	{object}	models.Error			"internal server error"
+//	@Failure		400	{object}	models.UserError			"bad request"
+//	@Failure		401	{object}	models.UserError			"unauthorized"
+//	@Failure		500	{object}	models.UserError			"internal server error"
 //	@Router			/users/login [post]
 func (h *Handler) LoginUser(c echo.Context) error {
 	req := new(models.LoginUserRequest)

@@ -24,3 +24,7 @@ type LoginUserRequest struct {
 type LoginResponse struct {
 	Token string `json:"token"`
 }
+
+type UserError struct {
+	Message string `json:"message" example:"login/register error occured"`
+}
