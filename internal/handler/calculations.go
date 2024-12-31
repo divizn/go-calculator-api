@@ -36,7 +36,7 @@ func (h *Handler) GetAllCalculations(c echo.Context) error {
 //	@Accept			json
 //	@Produce		json
 //	@Success		200	{object}	models.Calculation	"ok"
-//	@Failure		404	{object}	models.CalcError			"not found"
+//	@Failure		404	{object}	models.CalcError	"not found"
 //
 //	@Router			/calculations/{id} [get]
 func (h *Handler) GetCalculation(c echo.Context) error {
@@ -63,7 +63,7 @@ func (h *Handler) GetCalculation(c echo.Context) error {
 //	@Accept			json
 //	@Produce		json
 //	@Success		201	{object}	models.Calculation	"created"
-//	@Failure		400	{object}	models.CalcError			"bad request"
+//	@Failure		400	{object}	models.CalcError	"bad request"
 //
 //	@Router			/calculations [post]
 func (h *Handler) CreateCalculation(c echo.Context) error {
@@ -100,7 +100,7 @@ func (h *Handler) CreateCalculation(c echo.Context) error {
 //	@Accept			json
 //	@Produce		json
 //	@Success		200	{object}	models.Calculation	"ok"
-//	@Failure		400	{object}	models.CalcError			"bad request"
+//	@Failure		400	{object}	models.CalcError	"bad request"
 //
 //	@Router			/calculations/{id} [put]
 func (h *Handler) UpdateCalculation(c echo.Context) error {
