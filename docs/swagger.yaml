@@ -2,7 +2,7 @@ definitions:
   models.CalcError:
     properties:
       message:
-        example: error message goes here
+        example: calculation error occured
         type: string
     type: object
   models.Calculation:
@@ -43,6 +43,38 @@ definitions:
     - number2
     - operator
     type: object
+  models.LoginResponse:
+    properties:
+      token:
+        type: string
+    type: object
+  models.LoginUserRequest:
+    properties:
+      password:
+        type: string
+      username:
+        type: string
+    required:
+    - password
+    - username
+    type: object
+  models.RegisterUserRequest:
+    properties:
+      password:
+        minLength: 8
+        type: string
+      user_role:
+        enum:
+        - admin
+        - user
+        type: string
+      username:
+        type: string
+    required:
+    - password
+    - user_role
+    - username
+    type: object
   models.UpdateCalculationRequest:
     properties:
       number1:
@@ -53,6 +85,23 @@ definitions:
         type: number
       operator:
         example: +
+        type: string
+    type: object
+  models.User:
+    properties:
+      created_at:
+        type: string
+      id:
+        type: integer
+      user_role:
+        type: string
+      username:
+        type: string
+    type: object
+  models.UserError:
+    properties:
+      message:
+        example: login/register error occured
         type: string
     type: object
 info:
@@ -174,4 +223,66 @@ paths:
           schema:
             $ref: '#/definitions/models.CalcError'
       summary: Updates a calculation from a given ID
+  /users/login:
+    post:
+      consumes:
+      - application/json
+      description: Authenticate user and return a JWT token
+      operationId: login-user
+      parameters:
+      - description: request body
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.LoginUserRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: logged in
+          schema:
+            $ref: '#/definitions/models.LoginResponse'
+        "400":
+          description: bad request
+          schema:
+            $ref: '#/definitions/models.UserError'
+        "401":
+          description: unauthorized
+          schema:
+            $ref: '#/definitions/models.UserError'
+        "500":
+          description: internal server error
+          schema:
+            $ref: '#/definitions/models.UserError'
+      summary: Login a user
+  /users/register:
+    post:
+      consumes:
+      - application/json
+      description: Register a new user in the system
+      operationId: register-user
+      parameters:
+      - description: request body
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.RegisterUserRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: created
+          schema:
+            $ref: '#/definitions/models.User'
+        "400":
+          description: bad request
+          schema:
+            $ref: '#/definitions/models.UserError'
+        "500":
+          description: internal server error
+          schema:
+            $ref: '#/definitions/models.UserError'
+      summary: Register a new user
 swagger: "2.0"
