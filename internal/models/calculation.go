@@ -34,10 +34,10 @@ var validate *validator.Validate
 
 func RegisterValidations() *validator.Validate {
 	validate = validator.New()
-	defer fmt.Println("Registered all validators")
 
 	validate.RegisterValidation("operator", validateOperator)
 
+	fmt.Println("Registered all validators")
 	return validate
 }
 
