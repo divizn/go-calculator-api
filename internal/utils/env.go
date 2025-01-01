@@ -11,6 +11,7 @@ type (
 	IConfig struct {
 		SERVER_ADDR string `env:"SERVER_ADDR" validate:"required"`
 		APP_ENV     string `env:"APP_ENV" validate:"required"`
+
 		DB_HOST     string `env:"DB_HOST" validate:"required"`
 		DB_PORT     int    `env:"DB_PORT" validate:"required"`
 		DB_DATABASE string `env:"DB_DATABASE" validate:"required"`
@@ -18,7 +19,11 @@ type (
 		DB_PASSWORD string `env:"DB_PASSWORD" validate:"required"`
 		DB_SCHEMA   string `env:"DB_SCHEMA" validate:"required"`
 		DB_URL      string `env:"DB_URL" validate:"required"`
-		JWT_SECRET  string `env:"JWT_SECRET" validate:"required"`
+
+		REDIS_ADDR string `env:"REDIS_ADDR" validate:"required"`
+		REDIS_PORT string `env:"REDIS_PORT" validate:"required"`
+
+		JWT_SECRET string `env:"JWT_SECRET" validate:"required"`
 	}
 )
 
