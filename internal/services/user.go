@@ -1,7 +1,6 @@
 package services
 
 import (
-	"context"
 	"errors"
 	"fmt"
 	"time"
@@ -9,7 +8,6 @@ import (
 	"github.com/dgrijalva/jwt-go"
 	"github.com/divizn/echo-calculator/internal/db"
 	"github.com/divizn/echo-calculator/internal/models"
-	"github.com/jackc/pgx/v5"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -49,39 +47,32 @@ func (s *Service) GenerateJWT(userID int, username string) (string, error) {
 
 // registers new user
 func (s *Service) RegisterUser(db *db.Database, req *models.RegisterUserRequest) (*models.User, error) {
+	// check if user exists by selecting first to lower costs of error
+	id, err := db.UserIDInDB(&req.Username)
+	if err != nil {
+		if id != -2 {
+			return nil, err
+		}
+	}
+
 	passwordHash, err := s.GenerateHash(req.Password)
 	if err != nil {
 		return nil, err
 	}
 
-	// TODO check if user exists by selecting instead of erroring because duplicate key
-
-	var user models.User
-	query := `
-	INSERT INTO users (username, user_role, password_hash, created_at)
-	VALUES ($1, $2, $3, NOW())
-	RETURNING id, username, user_role, password_hash, created_at
-    `
-	err = db.Pool.QueryRow(context.Background(), query, req.Username, req.UserRole, passwordHash).
-		Scan(&user.ID, &user.Username, &user.UserRole, &user.PasswordHash, &user.CreatedAt)
+	user, err := db.RegisterUser(req, passwordHash)
 	if err != nil {
-		return nil, fmt.Errorf("failed to register user: %v", err)
+		return nil, err
 	}
 
-	return &user, nil
+	return user, nil
 }
 
 // authenticate user and return JWT token if successful
 func (s *Service) LoginUser(db *db.Database, req *models.LoginUserRequest) (string, error) {
-	// Fetch the user from the database by username
-	var user models.User
-	query := `SELECT id, username, user_role, password_hash, created_at FROM users WHERE username = $1`
-	err := db.Pool.QueryRow(context.Background(), query, req.Username).Scan(&user.ID, &user.Username, &user.UserRole, &user.PasswordHash, &user.CreatedAt)
+	user, err := db.GetUserFromUsername(req.Username)
 	if err != nil {
-		if err == pgx.ErrNoRows {
-			return "", errors.New("invalid credentials")
-		}
-		return "", fmt.Errorf("failed to fetch user: %v", err)
+		return "", err
 	}
 
 	if !s.CompareHash(req.Password, user.PasswordHash) {
