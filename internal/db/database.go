@@ -19,7 +19,7 @@ type Database struct {
 // initialise the db and return a pointer to the connection pool to be utilised in handler.Handler
 func InitDB(config *utils.IConfig) (*Database, error) {
 	dbpool, err := pgxpool.New(context.Background(), config.DB_URL)
-	if err != nil {
+	if err != nil { // TODO create a retry that retries 5 times before panicking
 		fmt.Fprintf(os.Stderr, "Unable to create connection pool: %v\n", err)
 		os.Exit(1)
 	}
