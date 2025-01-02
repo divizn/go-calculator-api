@@ -30,21 +30,6 @@ func (db *Database) UserIDInDB(username *string) (int, error) {
 	return id, nil
 }
 
-// caches calculations for given user
-func (db *Database) CacheUserCalc(user_id int, calc *[]models.Calculation) error {
-	key := createUserCachePrefix(user_id)
-
-	err := db.Cache.Set(*db.Ctx, key, calc, REDIS_CACHE_TIMEOUT).Err()
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-func createUserCachePrefix(user_id int) string {
-	return fmt.Sprintf("user:%v:calculations", user_id)
-}
-
 // fetch the user from the database by username
 func (db *Database) GetUserFromUsername(username string) (*models.User, error) {
 	var user models.User
