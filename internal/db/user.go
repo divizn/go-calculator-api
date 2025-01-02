@@ -46,14 +46,6 @@ func createUserCachePrefix(user_id int) string {
 	return fmt.Sprintf("user:%v:calculations", user_id)
 }
 
-// returns the id if valid, otherwise nil and error
-func validateID(id *int) (*int, error) {
-	if *id <= 0 {
-		return nil, fmt.Errorf("id cannot be 0 or negative")
-	}
-	return id, nil
-}
-
 // fetch the user from the database by username
 func (db *Database) GetUserFromUsername(username string) (*models.User, error) {
 	var user models.User
