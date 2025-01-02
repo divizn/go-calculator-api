@@ -13,7 +13,7 @@ type User struct {
 type RegisterUserRequest struct {
 	Username string `json:"username" validate:"required"`
 	Password string `json:"password" validate:"required,min=8"`
-	UserRole string `json:"user_role" validate:"required,oneof=admin user"`
+	UserRole string `json:"user_role" validate:"required,oneof=admin adder subtracter divider multiplier other"`
 }
 
 type LoginUserRequest struct {
