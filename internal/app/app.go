@@ -15,7 +15,7 @@ type App struct {
 
 func NewApp(db *db.Database) *App {
 	e := echo.New()
-	h := handler.NewHandler(db)
+	h := handler.NewHandler()
 
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())

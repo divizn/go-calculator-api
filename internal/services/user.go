@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
-	"github.com/divizn/echo-calculator/internal/db"
 	"github.com/divizn/echo-calculator/internal/models"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -46,9 +45,9 @@ func (s *Service) GenerateJWT(userID int, username string) (string, error) {
 }
 
 // registers new user
-func (s *Service) RegisterUser(db *db.Database, req *models.RegisterUserRequest) (*models.User, error) {
+func (s *Service) RegisterUser(req *models.RegisterUserRequest) (*models.User, error) {
 	// check if user exists by selecting first to lower costs of error
-	id, err := db.UserIDInDB(&req.Username)
+	id, err := s.Db.UserIDInDB(&req.Username)
 	if err != nil {
 		if id != -2 {
 			return nil, err
@@ -60,7 +59,7 @@ func (s *Service) RegisterUser(db *db.Database, req *models.RegisterUserRequest)
 		return nil, err
 	}
 
-	user, err := db.RegisterUser(req, passwordHash)
+	user, err := s.Db.RegisterUser(req, passwordHash)
 	if err != nil {
 		return nil, err
 	}
@@ -69,8 +68,8 @@ func (s *Service) RegisterUser(db *db.Database, req *models.RegisterUserRequest)
 }
 
 // authenticate user and return JWT token if successful
-func (s *Service) LoginUser(db *db.Database, req *models.LoginUserRequest) (string, error) {
-	user, err := db.GetUserFromUsername(req.Username)
+func (s *Service) LoginUser(req *models.LoginUserRequest) (string, error) {
+	user, err := s.Db.GetUserFromUsername(req.Username)
 	if err != nil {
 		return "", err
 	}

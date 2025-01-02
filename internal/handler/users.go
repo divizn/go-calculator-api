@@ -34,7 +34,7 @@ func (h *Handler) RegisterUser(c echo.Context) error {
 		})
 	}
 
-	user, err := h.Service.RegisterUser(h.Db, req)
+	user, err := h.Service.RegisterUser(req)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, map[string]string{
 			"error": "Failed to register user",
@@ -71,7 +71,7 @@ func (h *Handler) LoginUser(c echo.Context) error {
 		})
 	}
 
-	token, err := h.Service.LoginUser(h.Db, req)
+	token, err := h.Service.LoginUser(req)
 	if err != nil {
 		if strings.Contains(err.Error(), "invalid credentials") {
 			return c.JSON(http.StatusUnauthorized, map[string]string{

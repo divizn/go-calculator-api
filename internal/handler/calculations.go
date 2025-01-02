@@ -18,7 +18,7 @@ import (
 //	@Success		200	{array}	models.Calculation	"ok"
 //	@Router			/calculations [get]
 func (h *Handler) GetAllCalculations(c echo.Context) error {
-	calculations, err := h.Service.GetAllCalculations(h.Db)
+	calculations, err := h.Service.GetAllCalculations()
 	if err != nil {
 		return models.Return500InternalServerError(c, err)
 	}
@@ -44,7 +44,7 @@ func (h *Handler) GetCalculation(c echo.Context) error {
 		return models.Return400BadRequest(c)
 	}
 
-	calc, err := h.Service.GetCalculationByID(h.Db, id)
+	calc, err := h.Service.GetCalculationByID(id)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, map[string]string{
 			"error": err.Error(),
@@ -78,7 +78,7 @@ func (h *Handler) CreateCalculation(c echo.Context) error {
 		})
 	}
 
-	calc, err := h.Service.CreateCalculation(h.Db, req)
+	calc, err := h.Service.CreateCalculation(req)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, map[string]string{
 			"error": "Failed to create calculation	",
@@ -122,7 +122,7 @@ func (h *Handler) UpdateCalculation(c echo.Context) error {
 		})
 	}
 
-	updatedCalc, err := h.Service.UpdateCalculation(h.Db, id, calc, c)
+	updatedCalc, err := h.Service.UpdateCalculation(id, calc, c)
 	if err != nil {
 		if err.Error() == "calculation not found" {
 			return c.JSON(http.StatusNotFound, map[string]string{"error": err.Error()})
@@ -151,7 +151,7 @@ func (h *Handler) DeleteCalculation(c echo.Context) error {
 	if err != nil {
 		return models.Return400BadRequest(c)
 	}
-	if err := h.Service.DeleteCalculation(h.Db, id); err != nil {
+	if err := h.Service.DeleteCalculation(id); err != nil {
 		return c.JSON(http.StatusNotFound, map[string]string{
 			"error": err.Error(),
 		})

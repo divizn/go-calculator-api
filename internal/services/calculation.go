@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"math"
 
-	"github.com/divizn/echo-calculator/internal/db"
 	"github.com/divizn/echo-calculator/internal/models"
 	"github.com/labstack/echo/v4"
 )
@@ -37,8 +36,8 @@ func (s *Service) calculateResult(calc *models.Calculation) error {
 	return nil
 }
 
-func (s *Service) UpdateCalculation(db *db.Database, id int, req *models.UpdateCalculationRequest, ctx echo.Context) (*models.Calculation, error) {
-	calc, err := s.GetCalculationByID(db, id)
+func (s *Service) UpdateCalculation(id int, req *models.UpdateCalculationRequest, ctx echo.Context) (*models.Calculation, error) {
+	calc, err := s.GetCalculationByID(id)
 	if err != nil {
 		return nil, err
 	}
@@ -57,12 +56,12 @@ func (s *Service) UpdateCalculation(db *db.Database, id int, req *models.UpdateC
 		return nil, fmt.Errorf("failed to calculate result: %v", err)
 	}
 
-	db.UpdateCalculation(id, calc)
+	s.Db.UpdateCalculation(id, calc)
 	return calc, nil
 }
 
-func (s *Service) GetAllCalculations(db *db.Database) ([]*models.Calculation, error) {
-	calculations, err := db.GetAllCalculations()
+func (s *Service) GetAllCalculations() ([]*models.Calculation, error) {
+	calculations, err := s.Db.GetAllCalculations()
 	if err != nil {
 		return nil, err
 	}
@@ -70,12 +69,12 @@ func (s *Service) GetAllCalculations(db *db.Database) ([]*models.Calculation, er
 	return calculations, nil
 }
 
-func (s *Service) GetCalculationByID(db *db.Database, id int) (*models.Calculation, error) {
+func (s *Service) GetCalculationByID(id int) (*models.Calculation, error) {
 	if err := s.validateID(id); err != nil {
 		return nil, err
 	}
 
-	calc, err := db.GetCalculationByID(id)
+	calc, err := s.Db.GetCalculationByID(id)
 	if err != nil {
 		return nil, err
 	}
@@ -83,20 +82,20 @@ func (s *Service) GetCalculationByID(db *db.Database, id int) (*models.Calculati
 	return calc, nil
 }
 
-func (s *Service) DeleteCalculation(db *db.Database, id int) error {
-	_, err := s.GetCalculationByID(db, id) // get calculation first since deleting is costly unlike select, so first use select to check if the id is valid to save db costs, also validates id
+func (s *Service) DeleteCalculation(id int) error {
+	_, err := s.GetCalculationByID(id) // get calculation first since deleting is costly unlike select, so first use select to check if the id is valid to save db costs, also validates id
 	if err != nil {
 		return err
 	}
 
-	if err = db.DeleteCalculation(id); err != nil {
+	if err = s.Db.DeleteCalculation(id); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (s *Service) CreateCalculation(db *db.Database, req *models.CreateCalculationRequest) (*models.Calculation, error) {
+func (s *Service) CreateCalculation(req *models.CreateCalculationRequest) (*models.Calculation, error) {
 	calc := &models.Calculation{
 		Num1:     req.Num1,
 		Num2:     req.Num2,
@@ -107,7 +106,7 @@ func (s *Service) CreateCalculation(db *db.Database, req *models.CreateCalculati
 		return nil, fmt.Errorf("failed to calculate result: %v", err)
 	}
 
-	if err := db.CreateCalculation(calc); err != nil {
+	if err := s.Db.CreateCalculation(calc); err != nil {
 		return nil, err
 	}
 

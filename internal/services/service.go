@@ -3,16 +3,22 @@ package services
 import (
 	"fmt"
 
+	"github.com/divizn/echo-calculator/internal/db"
 	"github.com/divizn/echo-calculator/internal/utils"
 )
 
 type Service struct {
 	Config *utils.IConfig
+	Db     *db.Database
 }
 
 func NewService() *Service {
 	cfg, _ := utils.NewConfig()
-	return &Service{Config: cfg}
+	db, err := db.InitDB(cfg)
+	if err != nil {
+		panic(err)
+	}
+	return &Service{Config: cfg, Db: db}
 }
 
 // returns error if id not valid
