@@ -7,9 +7,9 @@ import (
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
+	"github.com/divizn/echo-calculator/internal/db"
 	"github.com/divizn/echo-calculator/internal/models"
 	"github.com/jackc/pgx/v5"
-	"github.com/jackc/pgx/v5/pgxpool"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -48,7 +48,7 @@ func (s *Service) GenerateJWT(userID int, username string) (string, error) {
 }
 
 // registers new user
-func (s *Service) RegisterUser(db *pgxpool.Pool, req *models.RegisterUserRequest) (*models.User, error) {
+func (s *Service) RegisterUser(db *db.Database, req *models.RegisterUserRequest) (*models.User, error) {
 	passwordHash, err := s.GenerateHash(req.Password)
 	if err != nil {
 		return nil, err
@@ -62,7 +62,7 @@ func (s *Service) RegisterUser(db *pgxpool.Pool, req *models.RegisterUserRequest
 	VALUES ($1, $2, $3, NOW())
 	RETURNING id, username, user_role, password_hash, created_at
     `
-	err = db.QueryRow(context.Background(), query, req.Username, req.UserRole, passwordHash).
+	err = db.Pool.QueryRow(context.Background(), query, req.Username, req.UserRole, passwordHash).
 		Scan(&user.ID, &user.Username, &user.UserRole, &user.PasswordHash, &user.CreatedAt)
 	if err != nil {
 		return nil, fmt.Errorf("failed to register user: %v", err)
@@ -72,11 +72,11 @@ func (s *Service) RegisterUser(db *pgxpool.Pool, req *models.RegisterUserRequest
 }
 
 // authenticate user and return JWT token if successful
-func (s *Service) LoginUser(db *pgxpool.Pool, req *models.LoginUserRequest) (string, error) {
+func (s *Service) LoginUser(db *db.Database, req *models.LoginUserRequest) (string, error) {
 	// Fetch the user from the database by username
 	var user models.User
 	query := `SELECT id, username, user_role, password_hash, created_at FROM users WHERE username = $1`
-	err := db.QueryRow(context.Background(), query, req.Username).Scan(&user.ID, &user.Username, &user.UserRole, &user.PasswordHash, &user.CreatedAt)
+	err := db.Pool.QueryRow(context.Background(), query, req.Username).Scan(&user.ID, &user.Username, &user.UserRole, &user.PasswordHash, &user.CreatedAt)
 	if err != nil {
 		if err == pgx.ErrNoRows {
 			return "", errors.New("invalid credentials")

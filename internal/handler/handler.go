@@ -5,14 +5,13 @@ import (
 	"github.com/divizn/echo-calculator/internal/models"
 	"github.com/divizn/echo-calculator/internal/services"
 	"github.com/go-playground/validator/v10"
-	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 var validate *validator.Validate
 
 type (
 	Handler struct {
-		Db       *pgxpool.Pool
+		Db       *db.Database
 		validate *validator.Validate
 		Service  *services.Service
 	}
@@ -22,7 +21,7 @@ func NewHandler(db *db.Database) *Handler {
 	validate = models.RegisterValidations()
 
 	handler := &Handler{
-		Db:       db.Pool,
+		Db:       db,
 		validate: validate,
 		Service:  services.NewService(),
 	}

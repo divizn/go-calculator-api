@@ -6,9 +6,9 @@ import (
 	"fmt"
 	"math"
 
+	"github.com/divizn/echo-calculator/internal/db"
 	"github.com/divizn/echo-calculator/internal/models"
 	"github.com/jackc/pgx/v5"
-	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/labstack/echo/v4"
 )
 
@@ -39,7 +39,7 @@ func (s *Service) calculateResult(calc *models.Calculation) error {
 	return nil
 }
 
-func (s *Service) UpdateCalculation(db *pgxpool.Pool, id int, calc *models.UpdateCalculationRequest, ctx echo.Context) (*models.Calculation, error) {
+func (s *Service) UpdateCalculation(db *db.Database, id int, calc *models.UpdateCalculationRequest, ctx echo.Context) (*models.Calculation, error) {
 	existingCalc, err := s.GetCalculationByID(db, id, ctx)
 	if err != nil {
 		return nil, err
@@ -65,7 +65,7 @@ func (s *Service) UpdateCalculation(db *pgxpool.Pool, id int, calc *models.Updat
         SET num1 = $1, num2 = $2, operator = $3, result = $4
         WHERE id = $5
     `
-	_, err = db.Exec(context.Background(), updateQuery, existingCalc.Num1, existingCalc.Num2, existingCalc.Operator, existingCalc.Result, id)
+	_, err = db.Pool.Exec(context.Background(), updateQuery, existingCalc.Num1, existingCalc.Num2, existingCalc.Operator, existingCalc.Result, id)
 	if err != nil {
 		return nil, fmt.Errorf("failed to update calculation: %v", err)
 	}
@@ -73,9 +73,9 @@ func (s *Service) UpdateCalculation(db *pgxpool.Pool, id int, calc *models.Updat
 	return existingCalc, nil
 }
 
-func (s *Service) GetAllCalculations(db *pgxpool.Pool) ([]*models.Calculation, error) {
+func (s *Service) GetAllCalculations(db *db.Database) ([]*models.Calculation, error) {
 	query := "SELECT id, num1, num2, operator, result FROM calculations"
-	rows, err := db.Query(context.Background(), query)
+	rows, err := db.Pool.Query(context.Background(), query)
 	if err != nil {
 		return nil, fmt.Errorf("failed to fetch calculations: %v", err)
 	}
@@ -102,14 +102,14 @@ func (s *Service) GetAllCalculations(db *pgxpool.Pool) ([]*models.Calculation, e
 	return calculations, nil
 }
 
-func (s *Service) GetCalculationByID(db *pgxpool.Pool, id int, ctx echo.Context) (*models.Calculation, error) {
+func (s *Service) GetCalculationByID(db *db.Database, id int, ctx echo.Context) (*models.Calculation, error) {
 	if id <= 0 {
 		return nil, fmt.Errorf("id cannot be 0 or less")
 	}
 
 	query := "SELECT id, num1, num2, operator, result FROM calculations WHERE id = $1"
 	calc := &models.Calculation{}
-	err := db.QueryRow(context.Background(), query, id).Scan(&calc.ID, &calc.Num1, &calc.Num2, &calc.Operator, &calc.Result)
+	err := db.Pool.QueryRow(context.Background(), query, id).Scan(&calc.ID, &calc.Num1, &calc.Num2, &calc.Operator, &calc.Result)
 	if err != nil {
 		if err == pgx.ErrNoRows {
 			return nil, fmt.Errorf("calculation not found")
@@ -120,14 +120,14 @@ func (s *Service) GetCalculationByID(db *pgxpool.Pool, id int, ctx echo.Context)
 	return calc, nil
 }
 
-func (s *Service) DeleteCalculation(db *pgxpool.Pool, id int, ctx echo.Context) error {
+func (s *Service) DeleteCalculation(db *db.Database, id int, ctx echo.Context) error {
 	_, err := s.GetCalculationByID(db, id, ctx) // get calculation first since deleting is costly unlike select, so first use select to check if the id is valid to save db costs
 	if err != nil {
 		return err
 	}
 	query := "DELETE FROM calculations WHERE id = $1"
 
-	cmdTag, err := db.Exec(context.Background(), query, id)
+	cmdTag, err := db.Pool.Exec(context.Background(), query, id)
 	if err != nil {
 		return err
 	}
@@ -139,7 +139,7 @@ func (s *Service) DeleteCalculation(db *pgxpool.Pool, id int, ctx echo.Context) 
 	return nil
 }
 
-func (s *Service) CreateCalculation(db *pgxpool.Pool, req *models.CreateCalculationRequest) (*models.Calculation, error) {
+func (s *Service) CreateCalculation(db *db.Database, req *models.CreateCalculationRequest) (*models.Calculation, error) {
 	calc := &models.Calculation{
 		Num1:     req.Num1,
 		Num2:     req.Num2,
@@ -155,7 +155,7 @@ func (s *Service) CreateCalculation(db *pgxpool.Pool, req *models.CreateCalculat
         VALUES ($1, $2, $3, $4)
         RETURNING id
     `
-	row := db.QueryRow(context.Background(), query, calc.Num1, calc.Num2, calc.Operator, calc.Result)
+	row := db.Pool.QueryRow(context.Background(), query, calc.Num1, calc.Num2, calc.Operator, calc.Result)
 
 	// Get the newly created ID
 	if err := row.Scan(&calc.ID); err != nil {
