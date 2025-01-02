@@ -44,7 +44,7 @@ func (h *Handler) GetCalculation(c echo.Context) error {
 		return models.Return400BadRequest(c)
 	}
 
-	calc, err := h.Service.GetCalculationByID(h.Db, id, c)
+	calc, err := h.Service.GetCalculationByID(h.Db, id)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, map[string]string{
 			"error": err.Error(),
@@ -151,7 +151,7 @@ func (h *Handler) DeleteCalculation(c echo.Context) error {
 	if err != nil {
 		return models.Return400BadRequest(c)
 	}
-	if err := h.Service.DeleteCalculation(h.Db, id, c); err != nil {
+	if err := h.Service.DeleteCalculation(h.Db, id); err != nil {
 		return c.JSON(http.StatusNotFound, map[string]string{
 			"error": err.Error(),
 		})

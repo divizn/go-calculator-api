@@ -1,14 +1,12 @@
 package services
 
 import (
-	"context"
 	"errors"
 	"fmt"
 	"math"
 
 	"github.com/divizn/echo-calculator/internal/db"
 	"github.com/divizn/echo-calculator/internal/models"
-	"github.com/jackc/pgx/v5"
 	"github.com/labstack/echo/v4"
 )
 
@@ -39,101 +37,60 @@ func (s *Service) calculateResult(calc *models.Calculation) error {
 	return nil
 }
 
-func (s *Service) UpdateCalculation(db *db.Database, id int, calc *models.UpdateCalculationRequest, ctx echo.Context) (*models.Calculation, error) {
-	existingCalc, err := s.GetCalculationByID(db, id, ctx)
+func (s *Service) UpdateCalculation(db *db.Database, id int, req *models.UpdateCalculationRequest, ctx echo.Context) (*models.Calculation, error) {
+	calc, err := s.GetCalculationByID(db, id)
 	if err != nil {
 		return nil, err
 	}
 
-	if calc.Num1 != nil {
-		existingCalc.Num1 = *calc.Num1
+	if req.Num1 != nil {
+		calc.Num1 = *req.Num1
 	}
-	if calc.Num2 != nil {
-		existingCalc.Num2 = *calc.Num2
+	if req.Num2 != nil {
+		calc.Num2 = *req.Num2
 	}
-	if calc.Operator != nil {
-		existingCalc.Operator = *calc.Operator
+	if req.Operator != nil {
+		calc.Operator = *req.Operator
 	}
 
-	if err := s.calculateResult(existingCalc); err != nil {
+	if err := s.calculateResult(calc); err != nil {
 		return nil, fmt.Errorf("failed to calculate result: %v", err)
 	}
 
-	// Update query
-	updateQuery := `
-        UPDATE calculations
-        SET num1 = $1, num2 = $2, operator = $3, result = $4
-        WHERE id = $5
-    `
-	_, err = db.Pool.Exec(context.Background(), updateQuery, existingCalc.Num1, existingCalc.Num2, existingCalc.Operator, existingCalc.Result, id)
-	if err != nil {
-		return nil, fmt.Errorf("failed to update calculation: %v", err)
-	}
-
-	return existingCalc, nil
+	db.UpdateCalculation(id, calc)
+	return calc, nil
 }
 
 func (s *Service) GetAllCalculations(db *db.Database) ([]*models.Calculation, error) {
-	query := "SELECT id, num1, num2, operator, result FROM calculations"
-	rows, err := db.Pool.Query(context.Background(), query)
+	calculations, err := db.GetAllCalculations()
 	if err != nil {
-		return nil, fmt.Errorf("failed to fetch calculations: %v", err)
-	}
-	defer rows.Close()
-
-	var calculations []*models.Calculation
-	for rows.Next() {
-		calc := &models.Calculation{}
-		err := rows.Scan(&calc.ID, &calc.Num1, &calc.Num2, &calc.Operator, &calc.Result)
-		if err != nil {
-			return nil, fmt.Errorf("failed to scan calculation: %v", err)
-		}
-		calculations = append(calculations, calc)
-	}
-
-	if rows.Err() != nil {
-		return nil, fmt.Errorf("error iterating rows: %v", rows.Err())
-	}
-
-	if calculations == nil {
-		return nil, fmt.Errorf("no calculations in db")
+		return nil, err
 	}
 
 	return calculations, nil
 }
 
-func (s *Service) GetCalculationByID(db *db.Database, id int, ctx echo.Context) (*models.Calculation, error) {
-	if id <= 0 {
-		return nil, fmt.Errorf("id cannot be 0 or less")
+func (s *Service) GetCalculationByID(db *db.Database, id int) (*models.Calculation, error) {
+	if err := s.validateID(id); err != nil {
+		return nil, err
 	}
 
-	query := "SELECT id, num1, num2, operator, result FROM calculations WHERE id = $1"
-	calc := &models.Calculation{}
-	err := db.Pool.QueryRow(context.Background(), query, id).Scan(&calc.ID, &calc.Num1, &calc.Num2, &calc.Operator, &calc.Result)
+	calc, err := db.GetCalculationByID(id)
 	if err != nil {
-		if err == pgx.ErrNoRows {
-			return nil, fmt.Errorf("calculation not found")
-		}
-		return nil, fmt.Errorf("failed to fetch calculation: %v", err)
+		return nil, err
 	}
 
 	return calc, nil
 }
 
-func (s *Service) DeleteCalculation(db *db.Database, id int, ctx echo.Context) error {
-	_, err := s.GetCalculationByID(db, id, ctx) // get calculation first since deleting is costly unlike select, so first use select to check if the id is valid to save db costs
-	if err != nil {
-		return err
-	}
-	query := "DELETE FROM calculations WHERE id = $1"
-
-	cmdTag, err := db.Pool.Exec(context.Background(), query, id)
+func (s *Service) DeleteCalculation(db *db.Database, id int) error {
+	_, err := s.GetCalculationByID(db, id) // get calculation first since deleting is costly unlike select, so first use select to check if the id is valid to save db costs, also validates id
 	if err != nil {
 		return err
 	}
 
-	if cmdTag.RowsAffected() == 0 {
-		return fmt.Errorf("no calculation found with id %d", id)
+	if err = db.DeleteCalculation(id); err != nil {
+		return err
 	}
 
 	return nil
@@ -145,21 +102,14 @@ func (s *Service) CreateCalculation(db *db.Database, req *models.CreateCalculati
 		Num2:     req.Num2,
 		Operator: req.Operator,
 	}
+	// modifies calc directly
 	if err := s.calculateResult(calc); err != nil {
 		return nil, fmt.Errorf("failed to calculate result: %v", err)
 	}
 
-	// Create query
-	query := `
-        INSERT INTO calculations (num1, num2, operator, result)
-        VALUES ($1, $2, $3, $4)
-        RETURNING id
-    `
-	row := db.Pool.QueryRow(context.Background(), query, calc.Num1, calc.Num2, calc.Operator, calc.Result)
-
-	// Get the newly created ID
-	if err := row.Scan(&calc.ID); err != nil {
-		return nil, fmt.Errorf("failed to scan calculation: %v", err)
+	if err := db.CreateCalculation(calc); err != nil {
+		return nil, err
 	}
+
 	return calc, nil
 }
