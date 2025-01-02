@@ -378,7 +378,11 @@ const docTemplate = `{
                     "type": "string",
                     "enum": [
                         "admin",
-                        "user"
+                        "adder",
+                        "subtracter",
+                        "divider",
+                        "multiplier",
+                        "other"
                     ]
                 },
                 "username": {
