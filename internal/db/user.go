@@ -3,14 +3,9 @@ package db
 import (
 	"errors"
 	"fmt"
-	"time"
 
 	"github.com/divizn/echo-calculator/internal/models"
 	"github.com/jackc/pgx/v5"
-)
-
-var (
-	REDIS_CACHE_TIMEOUT = time.Minute * 60
 )
 
 // checks if the given user is in the db and returns id if it is present
@@ -18,15 +13,13 @@ func (db *Database) UserIDInDB(username *string) (int, error) {
 	var id int
 
 	query := `SELECT id FROM users WHERE username = $1`
-	err := db.Pool.QueryRow(*db.Ctx, query, username).Scan(id)
+	err := db.Pool.QueryRow(*db.Ctx, query, username).Scan(&id)
 	if err != nil {
 		if err == pgx.ErrNoRows {
 			return -2, fmt.Errorf("no user found")
 		}
-		fmt.Println(err)
 		return -1, err
 	}
-
 	return id, nil
 }
 
