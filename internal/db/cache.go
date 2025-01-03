@@ -69,19 +69,6 @@ func (db *Database) GetCalculationsFromCache(id int, role string) (*[]models.Cal
 
 	return calcs, nil
 }
-func (db *Database) GetCalculationsFromCacheUser(id int, role string) (*[]models.Calculation, error) {
-	for range REDIS_CACHE_RETRIES {
-		calcs, err := db.GetCalculationsFromCache(id, role)
-		if err != nil {
-			fmt.Println(err)
-			continue
-		}
-		if calcs != nil {
-			return calcs, nil
-		}
-	}
-	return nil, fmt.Errorf("could not retrieve from cache")
-}
 
 func parseCalculations(calcs string) (*[]models.Calculation, error) {
 	var parsedCalcs *[]models.Calculation
