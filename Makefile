@@ -30,3 +30,7 @@ goose-up:
 
 goose-down:
 	@goose down
+
+start-app:
+	@docker compose --profile app up --build
+

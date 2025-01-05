@@ -11,6 +11,8 @@ services:
     depends_on:
       - psql
       - redis
+    profiles:
+      - app
 
   psql:
     image: postgres:latest
