@@ -1,0 +1,10 @@
+# bin
+main
+tmp/
+
+# etc
+docs/
+.gitignore
+.git/
+.air.toml
+.env.template
